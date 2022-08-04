@@ -74,6 +74,10 @@ class MainMenuScreen extends StatelessWidget {
               onPressed: () => GoRouter.of(context).go('/settings'),
               child: const Text('Settings'),
             ),
+            ElevatedButton(
+              onPressed: () => GoRouter.of(context).go('/newplay'),
+              child: const Text('a'),
+            ),
             _gap,
             Padding(
               padding: const EdgeInsets.only(top: 32),

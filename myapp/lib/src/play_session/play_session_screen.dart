@@ -4,8 +4,11 @@
 
 import 'dart:async';
 
+import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:logging/logging.dart' hide Level;
 import 'package:provider/provider.dart';
 
@@ -28,6 +31,79 @@ class PlaySessionScreen extends StatefulWidget {
 
   @override
   State<PlaySessionScreen> createState() => _PlaySessionScreenState();
+}
+
+class MyCustomClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    var size = 50;
+    var angle = (math.pi * 2) / 6;
+    path.moveTo(
+        size * math.cos(angle * 1) + 100, size * math.sin(angle * 1) + 100);
+    //path.lineTo(70, 20);
+    for (int i = 1; i <= 6; i++) {
+      double x = size * math.cos(angle * i);
+      double y = size * math.sin(angle * i);
+      path.lineTo(x + 100, y + 100);
+    }
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(MyCustomClipper oldClipper) => false;
+}
+
+class HexPainter extends CustomPainter {
+  HexPainter({
+    required this.sides,
+    required this.progress,
+    required this.showPath,
+    required this.showDots,
+  });
+
+  final double sides;
+  final double progress;
+  bool showDots, showPath;
+
+  final Paint _paint = Paint()
+    ..color = Colors.purple
+    ..strokeWidth = 4.0
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var path = createPath(6, 10);
+    PathMetric pathMetric = path.computeMetrics().first;
+    Path extractPath =
+        pathMetric.extractPath(0.0, pathMetric.length * progress);
+    if (showPath) {
+      canvas.drawPath(extractPath, _paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+
+  Path createPath(int sides, double radius) {
+    var offset = 1000;
+    var path = Path();
+    var angle = (math.pi * 2) / sides;
+    path.moveTo(
+        radius * math.cos(0.0) + offset, radius * math.sin(0.0) + offset);
+    for (int i = 1; i <= sides; i++) {
+      double x = radius * math.cos(angle * i);
+      double y = radius * math.sin(angle * i);
+      path.lineTo(x + offset, y + offset);
+    }
+    path.close();
+    return path;
+  }
 }
 
 class _PlaySessionScreenState extends State<PlaySessionScreen> {
@@ -75,8 +151,33 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
                         ),
                       ),
                     ),
+                    Center(
+                        child: ClipPath(
+                            clipper: MyCustomClipper(),
+                            child: GestureDetector(
+                                onTap: () {
+                                  print("On Tap");
+                                },
+                                child: Container(
+                                  width: 200,
+                                  height: 200,
+                                  decoration:
+                                      BoxDecoration(color: Colors.green),
+                                )))),
+                    ClipPath(
+                        clipper: MyCustomClipper(),
+                        child: GestureDetector(
+                            onTap: () {
+                              print("On Tap");
+                            },
+                            child: Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(color: Colors.green),
+                            ))),
                     const Spacer(),
-                    Text('Drag the slider to ${widget.level.difficulty}%'
+                    Text(
+                        'Drag the slider to Hellow World ${widget.level.difficulty}%'
                         ' or above!'),
                     Consumer<LevelState>(
                       builder: (context, levelState, child) => Slider(

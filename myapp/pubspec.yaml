@@ -12,7 +12,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   audioplayers: ^0.20.1
   cupertino_icons: ^1.0.2
   go_router: ^3.0.1
@@ -28,6 +27,7 @@ dependencies:
   games_services: ^2.0.7  # Achievements and leaderboards
   google_mobile_ads: ^1.1.0  # Ads
   in_app_purchase: ^3.0.1  # In-app purchases
+  flame: ^1.2.1
 
 dev_dependencies:
   flutter_test:
