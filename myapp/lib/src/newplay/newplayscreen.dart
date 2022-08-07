@@ -40,8 +40,8 @@ class IsometricTileMapExample extends FlameGame
 
   @override
   Future<void> onLoad() async {
-    double maxSide = min(size.x, size.y);
-    camera.viewport = FixedResolutionViewport(Vector2.all(maxSide));
+    //double maxSide = min(size.x, size.y);
+    //camera.viewport = FixedResolutionViewport(Vector2.all(maxSide));
     final someVector = Vector2(500, 500);
     debugPrint("HERE");
 
@@ -76,7 +76,7 @@ class IsometricTileMapExample extends FlameGame
     add(selector = Selector(destTileSize, selectorImage));
 
     //NEW
-    final shapes = [Polygon(generateHex(50.0, 500.0, 500.0))];
+    final shapes = [generateHex(50.0, 500.0, 500.0)];
     const colors = [Color.fromARGB(255, 56, 56, 32)];
     add(ShapesComponent(shapes, colors));
   }
@@ -167,7 +167,7 @@ class ShapesComponent extends Component {
   }
 }
 
-List<Vector2> generateHex(double r, double dx, double dy) {
+Polygon generateHex(double r, double dx, double dy) {
   List<Vector2> coords = [];
   for (var i = 0; i < 6; i++) {
     var x = r * sin(i * pi / 3) + dx;
@@ -175,5 +175,5 @@ List<Vector2> generateHex(double r, double dx, double dy) {
     coords.add(Vector2(x, y));
     debugPrint(Vector2(x, y).toString());
   }
-  return coords;
+  return Polygon(coords);
 }

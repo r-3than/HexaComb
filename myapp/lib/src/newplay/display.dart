@@ -8,12 +8,13 @@ class temp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iso = IsometricTileMapExample();
-    return (FractionallySizedBox(
-      heightFactor: 1,
-      widthFactor: 1,
+    return (FittedBox(
       child: Container(
-          height: 900,
-          child: GameWidget(game: iso),
+          child: SizedBox(
+            child: GameWidget(game: iso),
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+          ),
           decoration: BoxDecoration(color: Colors.green)),
     ));
   }
