@@ -9,13 +9,12 @@ class temp extends StatelessWidget {
   Widget build(BuildContext context) {
     final iso = IsometricTileMapExample();
     return (FractionallySizedBox(
-        child: Column(
-      children: [
-        Container(
-            height: MediaQuery.of(context).size.height,
-            child: GameWidget(game: iso),
-            decoration: BoxDecoration(color: Colors.green))
-      ],
-    )));
+      heightFactor: 1,
+      widthFactor: 1,
+      child: Container(
+          height: 900,
+          child: GameWidget(game: iso),
+          decoration: BoxDecoration(color: Colors.green)),
+    ));
   }
 }

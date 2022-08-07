@@ -2,18 +2,16 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 
 class IsometricTileMapExample extends FlameGame
-    with
-        MouseMovementDetector,
-        VerticalDragDetector,
-        HasDraggables,
-        HorizontalDragDetector {
+    with MouseMovementDetector, MultiTouchDragDetector {
   static const String description = '''
     Shows an example of how to use the `IsometricTileMapComponent`.\n\n
     Move the mouse over the board to see a selector appearing on the tiles.
@@ -26,9 +24,10 @@ class IsometricTileMapExample extends FlameGame
   static const destTileSize = scale * srcTileSize;
   static Vector2 lastCords = Vector2(0, 0);
   static Vector2 cameraCords = Vector2(500, 500);
+  static Vector2 lastdelta = Vector2(0, 0);
 
-  static const halfSize = true;
-  static const tileHeight = scale * (halfSize ? 8.0 : 16.0);
+  static const halfSize = false;
+  static const tileHeight = scale * (halfSize ? 32.0 : 32.0);
   static const suffix = halfSize ? '-short' : '';
 
   final originColor = Paint()..color = const Color(0xFFFF00FF);
@@ -59,7 +58,7 @@ class IsometricTileMapExample extends FlameGame
       [3, 1, 1, 1, 0, 0],
       [-1, 1, 2, 1, 0, 0],
       [-1, 0, 1, 1, 0, 0],
-      [-1, 1, 1, 1, 0, 0],
+      [-1, 1, 1, 1, 2, 0],
       [1, 1, 1, 1, 0, 2],
       [1, 3, 3, 3, 0, 2],
     ];
@@ -75,6 +74,11 @@ class IsometricTileMapExample extends FlameGame
 
     final selectorImage = await images.load('selector$suffix.png');
     add(selector = Selector(destTileSize, selectorImage));
+
+    //NEW
+    final shapes = [Polygon(generateHex(50.0, 500.0, 500.0))];
+    const colors = [Color.fromARGB(255, 56, 56, 32)];
+    add(ShapesComponent(shapes, colors));
   }
 
   @override
@@ -83,33 +87,28 @@ class IsometricTileMapExample extends FlameGame
     canvas.renderPoint(topLeft, size: 5, paint: originColor);
     canvas.renderPoint(
       topLeft.clone()..y -= tileHeight,
-      size: 5,
+      size: 50,
       paint: originColor2,
     );
   }
 
   @override
-  void onDragUpdate(int pointerId, DragUpdateInfo event) {
-    super.onDragUpdate(pointerId, event);
-    final localCoords = event.eventPosition.game;
-    var delta = lastCords - localCoords;
-    delta = delta / 1.8;
-    lastCords = localCoords;
+  void onDragUpdate(int pid, DragUpdateInfo event) {
+    debugPrint("TEST");
+    //super.onDragUpdate(event);
+    var delta = -event.delta.global;
     var newpos = cameraCords + delta;
     camera.followVector2(newpos);
     cameraCords = newpos;
   }
 
-  @override
-  void onDragStart(int pointerId, DragStartInfo startPosition) {
-    super.onDragStart(pointerId, startPosition);
-    lastCords = startPosition.eventPosition.game;
-    debugPrint("START...");
+  void onScaleUpdate(scaleinfo) {
+    debugPrint("scaling");
   }
 
   @override
-  void onHorizontalDragStart(DragStartInfo startPosition) {
-    super.onHorizontalDragStart(startPosition);
+  void onDragStart(int pid, DragStartInfo startPosition) {
+    super.onDragStart(pid, startPosition);
     lastCords = startPosition.eventPosition.game;
     debugPrint("START2...");
   }
@@ -141,4 +140,40 @@ class Selector extends SpriteComponent {
 
     super.render(canvas);
   }
+}
+
+class ShapesComponent extends Component {
+  ShapesComponent(this.shapes, List<Color> colors)
+      : assert(
+          shapes.length == colors.length,
+          'The shapes and colors lists have to be of the same length',
+        ),
+        paints = colors
+            .map(
+              (color) => Paint()
+                ..style = PaintingStyle.fill
+                ..color = color,
+            )
+            .toList();
+
+  final List<Shape> shapes;
+  final List<Paint> paints;
+
+  @override
+  void render(Canvas canvas) {
+    for (var i = 0; i < shapes.length; i++) {
+      canvas.drawPath(shapes[i].asPath(), paints[i]);
+    }
+  }
+}
+
+List<Vector2> generateHex(double r, double dx, double dy) {
+  List<Vector2> coords = [];
+  for (var i = 0; i < 6; i++) {
+    var x = r * sin(i * pi / 3) + dx;
+    var y = r * cos(i * pi / 3) + dy;
+    coords.add(Vector2(x, y));
+    debugPrint(Vector2(x, y).toString());
+  }
+  return coords;
 }
