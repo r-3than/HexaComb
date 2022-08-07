@@ -8,14 +8,20 @@ class temp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iso = IsometricTileMapExample();
-    return (FittedBox(
-      child: Container(
-          child: SizedBox(
-            child: GameWidget(game: iso),
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-          ),
-          decoration: BoxDecoration(color: Colors.green)),
+    return (Column(
+      children: [
+        Text("hi"),
+        (Expanded(
+          child: Container(
+              child: SizedBox(
+                child: GameWidget(game: iso),
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+              ),
+              decoration: BoxDecoration(color: Colors.green)),
+        )),
+        Text("hi")
+      ],
     ));
   }
 }
