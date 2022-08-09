@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
 class IsometricTileMapExample extends FlameGame
-    with MouseMovementDetector, MultiTouchDragDetector {
+    with MouseMovementDetector, MultiTouchDragDetector, TapDetector {
   static const String description = '''
     Shows an example of how to use the `IsometricTileMapComponent`.\n\n
     Move the mouse over the board to see a selector appearing on the tiles.
@@ -43,12 +43,10 @@ class IsometricTileMapExample extends FlameGame
     //double maxSide = min(size.x, size.y);
     //camera.viewport = FixedResolutionViewport(Vector2.all(maxSide));
     final someVector = Vector2(500, 500);
-    debugPrint("HERE");
 
     camera.followVector2(someVector);
 
     debugPrint(camera.position.toString());
-    debugPrint("HERE");
     final tilesetImage = await images.load('tiles$suffix.png');
     final tileset = SpriteSheet(
       image: tilesetImage,
@@ -62,39 +60,29 @@ class IsometricTileMapExample extends FlameGame
       [1, 1, 1, 1, 0, 2],
       [1, 3, 3, 3, 0, 2],
     ];
-    add(
-      base = IsometricTileMapComponent(
-        tileset,
-        matrix,
-        destTileSize: Vector2.all(destTileSize),
-        tileHeight: tileHeight,
-        position: topLeft,
-      ),
-    );
 
     final selectorImage = await images.load('selector$suffix.png');
-    add(selector = Selector(destTileSize, selectorImage));
+    //add(selector = Selector(destTileSize, selectorImage));
 
     //NEW
-    final shapes = [generateHex(50.0, 500.0, 500.0)];
-    const colors = [Color.fromARGB(255, 56, 56, 32)];
+    var shapes = generateGrid(30, 5, 500, 500, 5);
+    List<Color> colors = [];
+
+    for (var i = 0; i < shapes.length - 1; i++) {
+      colors.add(Color.fromARGB(255, 158, 158, 68));
+    }
+    colors.add(Color.fromARGB(255, 255, 255, 255));
+
     add(ShapesComponent(shapes, colors));
   }
 
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    canvas.renderPoint(topLeft, size: 5, paint: originColor);
-    canvas.renderPoint(
-      topLeft.clone()..y -= tileHeight,
-      size: 50,
-      paint: originColor2,
-    );
   }
 
   @override
   void onDragUpdate(int pid, DragUpdateInfo event) {
-    debugPrint("TEST");
     //super.onDragUpdate(event);
     var delta = -event.delta.global;
     var newpos = cameraCords + delta;
@@ -104,6 +92,16 @@ class IsometricTileMapExample extends FlameGame
 
   void onScaleUpdate(scaleinfo) {
     debugPrint("scaling");
+  }
+
+  @override
+  void onTapDown(TapDownInfo e) {
+    debugPrint(e.eventPosition.game.toString());
+    var x = e.eventPosition.game.x;
+    var y = e.eventPosition.game.y;
+    var q = ((sqrt(3) * (x - 500) - (y - 500)) / (3 * 35)).round();
+    var r = (((0 * x) + 2 * (y - 500)) / (3 * 35)).round();
+    debugPrint(q.toString() + " | " + r.toString());
   }
 
   @override
@@ -117,9 +115,9 @@ class IsometricTileMapExample extends FlameGame
   void onMouseMove(PointerHoverInfo info) {
     final screenPosition = info.eventPosition.game;
     //camera.followVector2(screenPosition);
-    final block = base.getBlock(screenPosition);
-    selector.show = base.containsBlock(block);
-    selector.position.setFrom(topLeft + base.getBlockRenderPosition(block));
+    //final block = base.getBlock(screenPosition);
+    //selector.show = base.containsBlock(block);
+    //selector.position.setFrom(topLeft + base.getBlockRenderPosition(block));
   }
 }
 
@@ -170,10 +168,44 @@ class ShapesComponent extends Component {
 Polygon generateHex(double r, double dx, double dy) {
   List<Vector2> coords = [];
   for (var i = 0; i < 6; i++) {
-    var x = r * sin(i * pi / 3) + dx;
-    var y = r * cos(i * pi / 3) + dy;
+    var x = r * sin((i * pi / 3)) + dx;
+    var y = r * cos((i * pi / 3)) + dy;
     coords.add(Vector2(x, y));
-    debugPrint(Vector2(x, y).toString());
   }
   return Polygon(coords);
+}
+
+List<Polygon> generateGrid(
+    double r, double o, double ox, double oy, int layers) {
+  List<Polygon> myHex = [];
+  var temp = 0;
+  var x = 0.0;
+  var y = 0.0;
+  var ty = 0.0;
+  var tx = 0.0;
+  int rotamt = 1;
+  for (var j = 0; j < layers; j++) {
+    y = -j * 3 / 2 * (r + o);
+    rotamt = 1;
+    x = 0.0;
+    x = sqrt(3) * 0.5 * j * (r + o);
+
+    ty = 0.0;
+    tx = 0.0;
+    for (var i = 0; i < (j * 6); i++) {
+      debugPrint("LOOP");
+      y = y + ty;
+      x = x + tx;
+      debugPrint(i.toString());
+      debugPrint((i / 6).floor().toString());
+      myHex.add(generateHex(r, x + ox, y + oy));
+      if (i % j == 0) {
+        ty = sqrt(3) * (r + o) * sin((rotamt * pi) / 3);
+        tx = sqrt(3) * (r + o) * cos((rotamt * pi) / 3);
+        rotamt++;
+      }
+    }
+  }
+  myHex.add(generateHex(r, ox, oy));
+  return myHex;
 }
