@@ -26,6 +26,19 @@ class IsometricTileMapExample extends FlameGame
   static Vector2 cameraCords = Vector2(500, 500);
   static Vector2 lastdelta = Vector2(0, 0);
 
+  double centerX = 500;
+  double centerY = 500;
+  double hexSize = 50;
+  double offset = 5;
+  int layers = 5;
+
+  late var gridInfo = generateGrid(hexSize, offset, centerX, centerY, layers);
+  late List<Polygon> shapes = gridInfo[0];
+  late Map mapping = this.generateMapping(gridInfo[1]);
+  late List<Color> colors = generateColors(shapes);
+
+  late ShapesComponent HexGrid = ShapesComponent(shapes, colors);
+
   static const halfSize = false;
   static const tileHeight = scale * (halfSize ? 32.0 : 32.0);
   static const suffix = halfSize ? '-short' : '';
@@ -65,15 +78,9 @@ class IsometricTileMapExample extends FlameGame
     //add(selector = Selector(destTileSize, selectorImage));
 
     //NEW
-    var shapes = generateGrid(30, 5, 500, 500, 5);
-    List<Color> colors = [];
+    //var shapes = generateGrid(30, 5, 500, 500, 5);
 
-    for (var i = 0; i < shapes.length - 1; i++) {
-      colors.add(Color.fromARGB(255, 158, 158, 68));
-    }
-    colors.add(Color.fromARGB(255, 255, 255, 255));
-
-    add(ShapesComponent(shapes, colors));
+    add(HexGrid);
   }
 
   @override
@@ -99,9 +106,27 @@ class IsometricTileMapExample extends FlameGame
     debugPrint(e.eventPosition.game.toString());
     var x = e.eventPosition.game.x;
     var y = e.eventPosition.game.y;
-    var q = ((sqrt(3) * (x - 500) - (y - 500)) / (3 * 35)).round();
-    var r = (((0 * x) + 2 * (y - 500)) / (3 * 35)).round();
+    var q =
+        ((sqrt(3) * (x - centerX) - (y - centerY)) / (3 * (hexSize + offset)))
+                .round() +
+            layers -
+            1;
+    var r = (((0 * x) + 2 * (y - centerY)) / (3 * (hexSize + offset))).round() +
+        layers -
+        1;
     debugPrint(q.toString() + " | " + r.toString());
+    var toindex = mapping[q.toString() + "|" + r.toString()];
+    debugPrint(mapping.keys.toString());
+    debugPrint(mapping[q.toString() + "|" + r.toString()].toString());
+    if (toindex != null) {
+      if (colors[toindex] == Color.fromARGB(255, 229, 172, 63)) {
+        colors[toindex] = Color.fromARGB(255, 255, 253, 122);
+      } else {
+        colors[toindex] = Color.fromARGB(255, 229, 172, 63);
+      }
+
+      HexGrid.updateColor(colors);
+    }
   }
 
   @override
@@ -118,6 +143,28 @@ class IsometricTileMapExample extends FlameGame
     //final block = base.getBlock(screenPosition);
     //selector.show = base.containsBlock(block);
     //selector.position.setFrom(topLeft + base.getBlockRenderPosition(block));
+  }
+
+  Map generateMapping(List<double> centers) {
+    var mapping = new Map();
+    for (var i = 0; i < centers.length; i = i + 2) {
+      var x = centers[i];
+      var y = centers[i + 1];
+
+      var q =
+          ((sqrt(3) * (x - centerX) - (y - centerY)) / (3 * (hexSize + offset)))
+                  .round() +
+              layers -
+              1;
+      var r =
+          (((0 * x) + 2 * (y - centerY)) / (3 * (hexSize + offset))).round() +
+              layers -
+              1;
+      int intVal = (i / 2).round();
+      mapping[q.toString() + "|" + r.toString()] = intVal;
+    }
+    debugPrint(mapping.toString());
+    return mapping;
   }
 }
 
@@ -155,7 +202,17 @@ class ShapesComponent extends Component {
             .toList();
 
   final List<Shape> shapes;
-  final List<Paint> paints;
+  late List<Paint> paints;
+  void updateColor(colors) {
+    var temp = colors
+        .map(
+          (color) => Paint()
+            ..style = PaintingStyle.fill
+            ..color = color,
+        )
+        .toList();
+    paints = List<Paint>.from(temp);
+  }
 
   @override
   void render(Canvas canvas) {
@@ -175,15 +232,18 @@ Polygon generateHex(double r, double dx, double dy) {
   return Polygon(coords);
 }
 
-List<Polygon> generateGrid(
+List<dynamic> generateGrid(
     double r, double o, double ox, double oy, int layers) {
   List<Polygon> myHex = [];
-  var temp = 0;
+  List<double> centers = [];
   var x = 0.0;
   var y = 0.0;
   var ty = 0.0;
   var tx = 0.0;
   int rotamt = 1;
+  myHex.add(generateHex(r, ox, oy));
+  centers.add(ox);
+  centers.add(oy);
   for (var j = 0; j < layers; j++) {
     y = -j * 3 / 2 * (r + o);
     rotamt = 1;
@@ -199,6 +259,8 @@ List<Polygon> generateGrid(
       debugPrint(i.toString());
       debugPrint((i / 6).floor().toString());
       myHex.add(generateHex(r, x + ox, y + oy));
+      centers.add(x + ox);
+      centers.add(y + oy);
       if (i % j == 0) {
         ty = sqrt(3) * (r + o) * sin((rotamt * pi) / 3);
         tx = sqrt(3) * (r + o) * cos((rotamt * pi) / 3);
@@ -206,6 +268,15 @@ List<Polygon> generateGrid(
       }
     }
   }
-  myHex.add(generateHex(r, ox, oy));
-  return myHex;
+
+  return [myHex, centers];
+}
+
+List<Color> generateColors(List<Polygon> shapes) {
+  List<Color> colors = [];
+  for (var i = 0; i < shapes.length - 1; i++) {
+    colors.add(Color.fromARGB(255, 255, 255, 255));
+  }
+  colors.add(Color.fromARGB(255, 255, 255, 255));
+  return colors;
 }
