@@ -33,6 +33,7 @@ class IsometricTileMapExample extends FlameGame
   int layers = 5;
 
   late var gridInfo = generateGrid(hexSize, offset, centerX, centerY, layers);
+  late gridData gameGridData = gridData(layers);
   late List<Polygon> shapes = gridInfo[0];
   late Map mapping = this.generateMapping(gridInfo[1]);
   late List<Color> colors = generateColors(shapes);
@@ -81,6 +82,13 @@ class IsometricTileMapExample extends FlameGame
     //var shapes = generateGrid(30, 5, 500, 500, 5);
 
     add(HexGrid);
+    final sprite = await loadSprite('tick.png');
+    add(SpriteComponent(
+      sprite: sprite,
+      position: size / 2,
+      size: sprite.srcSize * 2,
+      anchor: Anchor.center,
+    ));
   }
 
   @override
@@ -114,19 +122,11 @@ class IsometricTileMapExample extends FlameGame
     var r = (((0 * x) + 2 * (y - centerY)) / (3 * (hexSize + offset))).round() +
         layers -
         1;
-    debugPrint(q.toString() + " | " + r.toString());
-    var toindex = mapping[q.toString() + "|" + r.toString()];
-    debugPrint(mapping.keys.toString());
-    debugPrint(mapping[q.toString() + "|" + r.toString()].toString());
-    if (toindex != null) {
-      if (colors[toindex] == Color.fromARGB(255, 229, 172, 63)) {
-        colors[toindex] = Color.fromARGB(255, 255, 253, 122);
-      } else {
-        colors[toindex] = Color.fromARGB(255, 229, 172, 63);
-      }
-
-      HexGrid.updateColor(colors);
-    }
+    // parse to grid
+    //debugPrint(q.toString() + " | " + r.toString());
+    gameGridData.onClick(q, r);
+    gameGridData.updateColors(mapping, colors, HexGrid);
+    debugPrint(gameGridData.hexMatrix.toString());
   }
 
   @override
@@ -279,4 +279,60 @@ List<Color> generateColors(List<Polygon> shapes) {
   }
   colors.add(Color.fromARGB(255, 255, 255, 255));
   return colors;
+}
+
+class gridData {
+  var hexMatrix = [];
+  gridData(int layers) {
+    var temp = 0;
+    for (var i = 0; i < layers - 1; i++) {
+      hexMatrix.add([]);
+      temp = 0;
+      for (var j = 0; j < (layers - 1 - i); j++) {
+        hexMatrix[i].add(null);
+        temp++;
+      }
+      for (var j = 0; j < 2 * layers - 1 - temp; j++) {
+        hexMatrix[i].add(0);
+      }
+    }
+
+    hexMatrix.add([]);
+    for (var i = 0; i < 2 * layers - 1; i++) {
+      hexMatrix[layers - 1].add(0);
+    }
+
+    for (var i = 0; i < layers - 1; i++) {
+      hexMatrix.add([]);
+      temp = 0;
+      for (var j = 0; j < (2 * layers - 2 - i); j++) {
+        hexMatrix[i + layers].add(0);
+        temp++;
+      }
+      for (var j = 0; j < 2 * layers - 1 - temp; j++) {
+        hexMatrix[i + layers].add(null);
+      }
+    }
+    //debugPrint(hexMatrix.toString());
+  }
+  void onClick(int x, int y) {
+    if (x < hexMatrix.length && y < hexMatrix.length) {
+      if (hexMatrix[x][y] != null) {
+        hexMatrix[x][y] = (hexMatrix[x][y] + 1) % 3;
+      }
+    }
+  }
+
+  void updateColors(Map mapping, List<Color> colors, ShapesComponent HexGrid) {
+    for (var q = 0; q < hexMatrix.length; q++) {
+      for (var r = 0; r < hexMatrix[q].length; r++) {
+        if (hexMatrix[q][r] != null) {
+          var toindex = mapping[q.toString() + "|" + r.toString()];
+          var val = hexMatrix[q][r];
+          colors[toindex] = Color.fromARGB(255, val * 50, val * 50, 50);
+          HexGrid.updateColor(colors);
+        }
+      }
+    }
+  }
 }
