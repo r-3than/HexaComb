@@ -10,7 +10,7 @@ class temp extends StatelessWidget {
     final iso = IsometricTileMapExample();
     return (Column(
       children: [
-        Text("hi"),
+        Text("Some Title"),
         (Expanded(
           child: Container(
               child: SizedBox(
@@ -19,8 +19,7 @@ class temp extends StatelessWidget {
                 width: MediaQuery.of(context).size.width,
               ),
               decoration: BoxDecoration(color: Colors.green)),
-        )),
-        Text("hi")
+        ))
       ],
     ));
   }

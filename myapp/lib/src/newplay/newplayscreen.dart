@@ -30,7 +30,7 @@ class IsometricTileMapExample extends FlameGame
   double centerY = 500;
   double hexSize = 50;
   double offset = 5;
-  int layers = 5;
+  int layers = 4;
 
   late var gridInfo = generateGrid(hexSize, offset, centerX, centerY, layers);
   late gridData gameGridData = gridData(layers);
@@ -46,6 +46,7 @@ class IsometricTileMapExample extends FlameGame
 
   final originColor = Paint()..color = const Color(0xFFFF00FF);
   final originColor2 = Paint()..color = const Color(0xFFAA55FF);
+  late SpriteComponent testSprite;
 
   late IsometricTileMapComponent base;
   late Selector selector;
@@ -82,13 +83,13 @@ class IsometricTileMapExample extends FlameGame
     //var shapes = generateGrid(30, 5, 500, 500, 5);
 
     add(HexGrid);
-    final sprite = await loadSprite('tick.png');
-    add(SpriteComponent(
-      sprite: sprite,
-      position: size / 2,
-      size: sprite.srcSize * 2,
-      anchor: Anchor.center,
-    ));
+    final sprite = await Sprite.load('tick.png');
+    testSprite = SpriteComponent(
+        sprite: sprite,
+        position: Vector2(0, size.y),
+        size: sprite.srcSize,
+        anchor: Anchor.bottomLeft);
+    add(testSprite);
   }
 
   @override
@@ -101,6 +102,7 @@ class IsometricTileMapExample extends FlameGame
     //super.onDragUpdate(event);
     var delta = -event.delta.global;
     var newpos = cameraCords + delta;
+    testSprite.position = newpos + Vector2(0, size.y / 2);
     camera.followVector2(newpos);
     cameraCords = newpos;
   }
@@ -282,8 +284,10 @@ List<Color> generateColors(List<Polygon> shapes) {
 }
 
 class gridData {
+  int gridLayers = 0;
   var hexMatrix = [];
   gridData(int layers) {
+    gridLayers = layers;
     var temp = 0;
     for (var i = 0; i < layers - 1; i++) {
       hexMatrix.add([]);
@@ -316,11 +320,69 @@ class gridData {
     //debugPrint(hexMatrix.toString());
   }
   void onClick(int x, int y) {
-    if (x < hexMatrix.length && y < hexMatrix.length) {
+    if (0 <= x && x < hexMatrix.length && 0 <= y && y < hexMatrix.length) {
       if (hexMatrix[x][y] != null) {
         hexMatrix[x][y] = (hexMatrix[x][y] + 1) % 3;
       }
     }
+    debugPrint(this.sameInRings(1, 2).toString());
+  }
+
+  bool sameInRings(int ring1, int ring2) {
+    return amountInRing(ring1) == amountInRing(ring2);
+  }
+
+  int amountInRing(int ring) {
+    int X = gridLayers;
+    int Y = 0;
+    int count = 0;
+    int j = ring;
+    count = 0;
+    X = gridLayers - 1;
+    Y = j - 1;
+    if (hexMatrix[X][Y] != 0) {
+      count++;
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      X++;
+      debugPrint(X.toString() + "|" + Y.toString());
+      if (hexMatrix[X][Y] != 0) {
+        count++;
+      }
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y++;
+      if (hexMatrix[X][Y] != 0) {
+        count++;
+      }
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y++;
+      X--;
+      if (hexMatrix[X][Y] != 0) {
+        count++;
+      }
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      X--;
+      if (hexMatrix[X][Y] != 0) {
+        count++;
+      }
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y--;
+      if (hexMatrix[X][Y] != 0) {
+        count++;
+      }
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y--;
+      X++;
+      if (hexMatrix[X][Y] != 0) {
+        count++;
+      }
+    }
+    return count;
   }
 
   void updateColors(Map mapping, List<Color> colors, ShapesComponent HexGrid) {
