@@ -16,6 +16,7 @@ class temp extends StatelessWidget {
               child: SizedBox(
                 child: GameWidget(game: iso, overlayBuilderMap: const {
                   'ActionMenu': _actionMenuBuilder,
+                  'PauseMenuBtn': _pauseMenuBtnBuilder,
                   'PauseMenu': _pauseMenuBuilder,
                 }),
                 height: MediaQuery.of(context).size.height,
@@ -39,13 +40,13 @@ Widget _actionMenuBuilder(
   return Align(
     alignment: FractionalOffset.bottomLeft,
     child: Container(
-      height: 150,
+      height: 100,
       child: Center(
           child: Row(children: [
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
             child: Icon(
-              Icons.undo,
+              Icons.track_changes, // track changes
               size: btnSize,
               color: btnColor,
             ),
@@ -54,7 +55,7 @@ Widget _actionMenuBuilder(
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
             child: Icon(
-              Icons.lightbulb_circle,
+              Icons.tips_and_updates_outlined,
               size: btnSize,
               color: btnColor,
             ),
@@ -63,7 +64,7 @@ Widget _actionMenuBuilder(
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
             child: Icon(
-              Icons.check_circle,
+              Icons.check,
               size: btnSize,
               color: btnColor,
             ),
@@ -77,20 +78,35 @@ void pre(IsometricTileMapExample test) {
   debugPrint(test.centerX.toString());
 }
 
-Widget _pauseMenuBuilder(
+void pauseHandler(IsometricTileMapExample game) {
+  if (game.overlays.isActive('PauseMenu')) {
+    game.overlays.remove('PauseMenu');
+    game.resumeEngine();
+  } else {
+    game.overlays.add('PauseMenu');
+    game.pauseEngine();
+  }
+}
+
+Widget _pauseMenuBtnBuilder(
     BuildContext buildContext, IsometricTileMapExample game) {
   return (Align(
       alignment: FractionalOffset.topRight,
       child: Container(
-          height: 150,
-          child: Center(
-            child: TextButton(
-                style: TextButton.styleFrom(shape: CircleBorder()),
-                child: Icon(
-                  Icons.undo,
-                  size: btnSize,
-                  color: btnColor,
-                ),
-                onPressed: () => pre(game)),
-          ))));
+        child: TextButton(
+            style: TextButton.styleFrom(shape: CircleBorder()),
+            child: Icon(
+              Icons.menu,
+              size: btnSize,
+              color: btnColor,
+            ),
+            onPressed: () => pauseHandler(game)),
+      )));
+}
+
+Widget _pauseMenuBuilder(
+    BuildContext buildContext, IsometricTileMapExample game) {
+  return Center(
+    child: Container(child: Text("Hello World!")),
+  );
 }

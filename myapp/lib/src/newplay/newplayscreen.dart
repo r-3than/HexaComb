@@ -33,6 +33,8 @@ class IsometricTileMapExample extends FlameGame
   double offset = 5;
   int layers = 4;
 
+  late double maxSize = (hexSize + offset) * layers;
+
   late var gridInfo = generateGrid(hexSize, offset, centerX, centerY, layers);
   late gridData gameGridData = gridData(layers);
   late List<Polygon> shapes = gridInfo[0];
@@ -40,8 +42,6 @@ class IsometricTileMapExample extends FlameGame
   late List<Color> colors = generateColors(shapes);
 
   late ShapesComponent HexGrid = ShapesComponent(shapes, colors);
-
-  late SpriteComponent testSprite;
 
   IsometricTileMapExample();
 
@@ -51,7 +51,8 @@ class IsometricTileMapExample extends FlameGame
     camera.followVector2(cameraCords);
     gameGridData.updateColors(mapping, colors, HexGrid);
     debugPrint(camera.position.toString());
-    overlays.add('PauseMenu');
+    overlays.add('PauseMenuBtn');
+    overlays.add('ActionMenu');
 
     add(HexGrid);
   }
@@ -71,7 +72,9 @@ class IsometricTileMapExample extends FlameGame
   void onScaleUpdate(ScaleUpdateInfo info) {
     final currentScale = info.scale.global;
     if (!currentScale.isIdentity()) {
-      camera.zoom = startZoom * currentScale.y;
+      if (startZoom * currentScale.y < 3 && startZoom * currentScale.y > 0.5) {
+        camera.zoom = startZoom * currentScale.y;
+      }
     }
   }
 
@@ -79,14 +82,20 @@ class IsometricTileMapExample extends FlameGame
   void onDragUpdate(int pid, DragUpdateInfo event) {
     var delta = -event.delta.global;
     var newpos = cameraCords + delta;
-    if (-size.x < newpos.x &&
-        newpos.x < size.x &&
-        -size.y < newpos.y &&
-        newpos.y < size.y) {
-      testSprite.position = newpos + Vector2(0, size.y / 2);
-      camera.followVector2(newpos);
-      cameraCords = newpos;
+    if (-maxSize > newpos.x) {
+      newpos.x = -maxSize + 1;
     }
+    if (-maxSize > newpos.y) {
+      newpos.y = -maxSize + 1;
+    }
+    if (maxSize < newpos.x) {
+      newpos.x = maxSize - 1;
+    }
+    if (maxSize < newpos.y) {
+      newpos.y = maxSize - 1;
+    }
+    cameraCords = newpos;
+    camera.followVector2(newpos);
   }
 
   @override
