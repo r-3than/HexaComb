@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
+import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/sprite.dart';
@@ -11,24 +12,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
 class IsometricTileMapExample extends FlameGame
-    with MouseMovementDetector, MultiTouchDragDetector, TapDetector {
+    with
+        MouseMovementDetector,
+        MultiTouchDragDetector,
+        TapDetector,
+        ScaleDetector {
   static const String description = '''
     Shows an example of how to use the `IsometricTileMapComponent`.\n\n
     Move the mouse over the board to see a selector appearing on the tiles.
   ''';
 
-  final topLeft = Vector2.all(500);
-
-  static const scale = 2.0;
-  static const srcTileSize = 32.0;
-  static const destTileSize = scale * srcTileSize;
   static Vector2 lastCords = Vector2(0, 0);
-  static Vector2 cameraCords = Vector2(500, 500);
+  static Vector2 cameraCords = Vector2(0, 0);
   static Vector2 lastdelta = Vector2(0, 0);
 
-  double centerX = 500;
-  double centerY = 500;
-  double hexSize = 50;
+  late double startZoom = 1.0;
+  double centerX = 0;
+  double centerY = 0;
+  late double hexSize = size.x / (2 * (layers + layers - 1));
   double offset = 5;
   int layers = 4;
 
@@ -40,56 +41,19 @@ class IsometricTileMapExample extends FlameGame
 
   late ShapesComponent HexGrid = ShapesComponent(shapes, colors);
 
-  static const halfSize = false;
-  static const tileHeight = scale * (halfSize ? 32.0 : 32.0);
-  static const suffix = halfSize ? '-short' : '';
-
-  final originColor = Paint()..color = const Color(0xFFFF00FF);
-  final originColor2 = Paint()..color = const Color(0xFFAA55FF);
   late SpriteComponent testSprite;
-
-  late IsometricTileMapComponent base;
-  late Selector selector;
 
   IsometricTileMapExample();
 
   @override
   Future<void> onLoad() async {
-    //double maxSide = min(size.x, size.y);
-    //camera.viewport = FixedResolutionViewport(Vector2.all(maxSide));
-    final someVector = Vector2(500, 500);
-
-    camera.followVector2(someVector);
-
+    Flame.device.fullScreen();
+    camera.followVector2(cameraCords);
+    gameGridData.updateColors(mapping, colors, HexGrid);
     debugPrint(camera.position.toString());
-    final tilesetImage = await images.load('tiles$suffix.png');
-    final tileset = SpriteSheet(
-      image: tilesetImage,
-      srcSize: Vector2.all(srcTileSize),
-    );
-    final matrix = [
-      [3, 1, 1, 1, 0, 0],
-      [-1, 1, 2, 1, 0, 0],
-      [-1, 0, 1, 1, 0, 0],
-      [-1, 1, 1, 1, 2, 0],
-      [1, 1, 1, 1, 0, 2],
-      [1, 3, 3, 3, 0, 2],
-    ];
-
-    final selectorImage = await images.load('selector$suffix.png');
-    //add(selector = Selector(destTileSize, selectorImage));
-
-    //NEW
-    //var shapes = generateGrid(30, 5, 500, 500, 5);
+    overlays.add('PauseMenu');
 
     add(HexGrid);
-    final sprite = await Sprite.load('tick.png');
-    testSprite = SpriteComponent(
-        sprite: sprite,
-        position: Vector2(0, size.y),
-        size: sprite.srcSize,
-        anchor: Anchor.bottomLeft);
-    add(testSprite);
   }
 
   @override
@@ -98,17 +62,31 @@ class IsometricTileMapExample extends FlameGame
   }
 
   @override
-  void onDragUpdate(int pid, DragUpdateInfo event) {
-    //super.onDragUpdate(event);
-    var delta = -event.delta.global;
-    var newpos = cameraCords + delta;
-    testSprite.position = newpos + Vector2(0, size.y / 2);
-    camera.followVector2(newpos);
-    cameraCords = newpos;
+  void onScaleStart(_) {
+    startZoom = camera.zoom;
+    debugPrint("hi");
   }
 
-  void onScaleUpdate(scaleinfo) {
-    debugPrint("scaling");
+  @override
+  void onScaleUpdate(ScaleUpdateInfo info) {
+    final currentScale = info.scale.global;
+    if (!currentScale.isIdentity()) {
+      camera.zoom = startZoom * currentScale.y;
+    }
+  }
+
+  @override
+  void onDragUpdate(int pid, DragUpdateInfo event) {
+    var delta = -event.delta.global;
+    var newpos = cameraCords + delta;
+    if (-size.x < newpos.x &&
+        newpos.x < size.x &&
+        -size.y < newpos.y &&
+        newpos.y < size.y) {
+      testSprite.position = newpos + Vector2(0, size.y / 2);
+      camera.followVector2(newpos);
+      cameraCords = newpos;
+    }
   }
 
   @override
@@ -136,15 +114,6 @@ class IsometricTileMapExample extends FlameGame
     super.onDragStart(pid, startPosition);
     lastCords = startPosition.eventPosition.game;
     debugPrint("START2...");
-  }
-
-  @override
-  void onMouseMove(PointerHoverInfo info) {
-    final screenPosition = info.eventPosition.game;
-    //camera.followVector2(screenPosition);
-    //final block = base.getBlock(screenPosition);
-    //selector.show = base.containsBlock(block);
-    //selector.position.setFrom(topLeft + base.getBlockRenderPosition(block));
   }
 
   Map generateMapping(List<double> centers) {
@@ -218,6 +187,17 @@ class ShapesComponent extends Component {
 
   @override
   void render(Canvas canvas) {
+    for (var i = 0; i < shapes.length; i++) {
+      Paint testPaint = Paint();
+      testPaint.style = PaintingStyle.fill;
+      testPaint.color = Color.fromARGB(255, 207, 117, 0);
+      Shape tempShapes = shapes[i];
+      Transform2D tempTrans = Transform2D();
+      tempTrans.x = 3.00;
+      tempTrans.y = 2.00;
+      tempShapes = tempShapes.project(tempTrans);
+      canvas.drawPath(tempShapes.asPath(), testPaint);
+    }
     for (var i = 0; i < shapes.length; i++) {
       canvas.drawPath(shapes[i].asPath(), paints[i]);
     }
@@ -391,7 +371,8 @@ class gridData {
         if (hexMatrix[q][r] != null) {
           var toindex = mapping[q.toString() + "|" + r.toString()];
           var val = hexMatrix[q][r];
-          colors[toindex] = Color.fromARGB(255, val * 50, val * 50, 50);
+          int newval = 255 - (val.hashCode * 50);
+          colors[toindex] = Color.fromARGB(255, newval, newval, newval);
           HexGrid.updateColor(colors);
         }
       }
