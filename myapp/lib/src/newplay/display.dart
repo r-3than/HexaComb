@@ -1,6 +1,7 @@
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'newplayscreen.dart';
 
@@ -32,6 +33,7 @@ class temp extends StatelessWidget {
 //Make Widgets for Menu here
 
 double btnSize = 65;
+double textFontSize = 35;
 Color btnColor = Color.fromARGB(255, 229, 243, 210);
 Color transColor = Color.fromARGB(0, 0, 0, 0);
 
@@ -107,6 +109,70 @@ Widget _pauseMenuBtnBuilder(
 Widget _pauseMenuBuilder(
     BuildContext buildContext, IsometricTileMapExample game) {
   return Center(
-    child: Container(child: Text("Hello World!")),
+    child: Container(
+        width: MediaQuery.of(buildContext).size.width * 3 / 4,
+        height: (btnSize + 16) * 5,
+        decoration: BoxDecoration(
+            color: Color.fromARGB(255, 0, 0, 0),
+            border: Border.all(),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.orange.withOpacity(0.5),
+                spreadRadius: 5,
+                blurRadius: 7,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
+            borderRadius: BorderRadius.all(Radius.circular(20))),
+        child: Padding(
+            padding: EdgeInsets.all(18.0),
+            child: ListView(
+              //cont her TODO
+              children: [
+                OutlinedButton(
+                    onPressed: () => pauseHandler(game),
+                    style: OutlinedButton.styleFrom(
+                        backgroundColor: btnColor,
+                        minimumSize: Size(game.orgSizeX * 3 / 5, btnSize)),
+                    child: Text(
+                      "Back",
+                      style: TextStyle(fontSize: textFontSize),
+                    )),
+                Padding(padding: const EdgeInsets.all(16.0)),
+                OutlinedButton(
+                    onPressed: () => pauseHandler(game),
+                    style: OutlinedButton.styleFrom(
+                        backgroundColor: btnColor,
+                        minimumSize: Size(game.orgSizeX * 3 / 5, btnSize)),
+                    child: Text(
+                      "Level Select",
+                      style: TextStyle(fontSize: textFontSize),
+                    )),
+                Padding(padding: const EdgeInsets.all(16.0)),
+                OutlinedButton(
+                    onPressed: () => back(buildContext),
+                    style: OutlinedButton.styleFrom(
+                        backgroundColor: btnColor,
+                        minimumSize: Size(game.orgSizeX * 3 / 5, btnSize)),
+                    child: Text(
+                      "Main Menu",
+                      style: TextStyle(fontSize: textFontSize),
+                    )),
+                Padding(padding: const EdgeInsets.all(16.0)),
+                OutlinedButton(
+                    onPressed: () => pauseHandler(game),
+                    style: OutlinedButton.styleFrom(
+                        backgroundColor: btnColor,
+                        minimumSize: Size(game.orgSizeX * 3 / 5, btnSize)),
+                    child: Text(
+                      "Back",
+                      style: TextStyle(fontSize: textFontSize),
+                    )),
+              ],
+            ))),
   );
+}
+
+void back(BuildContext c) {
+  GoRouter.of(c).pop();
 }
