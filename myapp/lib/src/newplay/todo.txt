@@ -1,6 +1,7 @@
-1) Highlight feature!
-2) Menu Buttons
+1) Highlight feature! <- DONE
+1.5)Rules
+2) Menu Buttons 1/2
 3) Levesl
-4) Shadows
+4) Shadows DONE
 5) Time limit
 6) Rules

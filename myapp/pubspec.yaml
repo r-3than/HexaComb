@@ -50,6 +50,10 @@ flutter:
     - family: Permanent Marker
       fonts:
         - asset: assets/Permanent_Marker/PermanentMarker-Regular.ttf
+    - family: Silkscreen
+      fonts:
+        - asset: fonts/Silkscreen-Bold.ttf
+        - asset: fonts/Silkscreen-Regular.ttf
 
 flutter_icons:
   android: true

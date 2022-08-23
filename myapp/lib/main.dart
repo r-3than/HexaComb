@@ -7,6 +7,8 @@
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 
+import 'dart:io';
+
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:game_template/src/newplay/display.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
@@ -87,13 +90,13 @@ void guardedMain() {
   //       Read the README for more info on each integration.
 
   AdsController? adsController;
-  // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
-  //   /// Prepare the google_mobile_ads plugin so that the first ad loads
-  //   /// faster. This can be done later or with a delay if startup
-  //   /// experience suffers.
-  //   adsController = AdsController(MobileAds.instance);
-  //   adsController.initialize();
-  // }
+  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+    /// Prepare the google_mobile_ads plugin so that the first ad loads
+    /// faster. This can be done later or with a delay if startup
+    /// experience suffers.
+    adsController = AdsController(MobileAds.instance);
+    adsController.initialize();
+  }
 
   GamesServicesController? gamesServicesController;
   // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
@@ -148,7 +151,7 @@ class MyApp extends StatelessWidget {
                       final level = gameLevels
                           .singleWhere((e) => e.number == levelNumber);
                       return buildMyTransition(
-                        child: PlaySessionScreen(
+                        child: GameDisplayScreen(
                           level,
                           key: const Key('play session'),
                         ),
@@ -177,10 +180,10 @@ class MyApp extends StatelessWidget {
               builder: (context, state) =>
                   const SettingsScreen(key: Key('settings')),
             ),
-            GoRoute(
-              path: 'newplay',
-              builder: (context, state) => const temp(key: Key('newplay')),
-            ),
+            //GoRoute(
+            //  path: 'newplay',
+            //  builder: (context, state) => GameDisplayScreen(key: Key('newplay')),
+            //),
           ]),
     ],
   );
@@ -257,8 +260,10 @@ class MyApp extends StatelessWidget {
                 background: palette.backgroundMain,
               ),
               textTheme: TextTheme(
+                button: TextStyle(fontFamily: 'Silkscreen'),
                 bodyText2: TextStyle(
                   color: palette.ink,
+                  fontFamily: 'Silkscreen',
                 ),
               ),
             ),

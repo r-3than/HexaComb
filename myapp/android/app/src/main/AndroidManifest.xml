@@ -25,12 +25,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- Google Mobile Ads -->
+        <!-- Google Mobile Ads TODO-->
         <!-- TODO: Replace the sample AdMob app ID with an actual app ID.
                    See README.txt for details. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-2697526402985295~7613736604"/>
        <!-- Google Play Games -->
        <!-- Warning: Never include the Play Games app_id directly here.
                      It won't work. Use the XML file in res/values. -->

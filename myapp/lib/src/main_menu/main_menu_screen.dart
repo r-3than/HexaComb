@@ -29,17 +29,29 @@ class MainMenuScreen extends StatelessWidget {
         mainAreaProminence: 0.45,
         squarishMainArea: Center(
           child: Transform.rotate(
-            angle: -0.1,
-            child: const Text(
-              'Flutter Game Template!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Permanent Marker',
-                fontSize: 55,
-                height: 1,
-              ),
-            ),
-          ),
+              angle: -0.15,
+              child: Column(children: [
+                Spacer(),
+                const Text(
+                  'Hexacomb!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Silkscreen',
+                    fontSize: 55,
+                    height: 1,
+                  ),
+                ),
+                const Text(
+                  'a fun hexagon puzzle game!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Silkscreen',
+                    fontSize: 30,
+                    height: 1,
+                  ),
+                ),
+                Spacer()
+              ])),
         ),
         rectangularMenuArea: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -73,10 +85,6 @@ class MainMenuScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => GoRouter.of(context).go('/settings'),
               child: const Text('Settings'),
-            ),
-            ElevatedButton(
-              onPressed: () => GoRouter.of(context).go('/newplay'),
-              child: const Text('a'),
             ),
             _gap,
             Padding(

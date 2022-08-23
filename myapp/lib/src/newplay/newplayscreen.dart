@@ -28,17 +28,21 @@ class IsometricTileMapExample extends FlameGame
 
   late double orgSizeX = size.x;
   late double orgSizeY = size.y;
+  int score = 0;
+  List<int> adjRule = [1, 2, 3, 4, 5, 6];
+  List<int> ringRule = [1, 1];
 
   late double startZoom = 1.0;
   double centerX = 0;
   double centerY = 0;
+  int layers = 4;
   late double hexSize = size.x / (2 * (layers + layers - 1));
   late double offset = 2 * size.x / (3 * hexSize);
-  int layers = 4;
 
   late double maxSize = (hexSize + offset) * layers;
 
   late var gridInfo = generateGrid(hexSize, offset, centerX, centerY, layers);
+  int? level;
   //late gridData gameGridData = gridData(layers);
   late List<Polygon> shapes = gridInfo[0];
   late Map mapping = this.generateMapping(gridInfo[1]);
@@ -65,8 +69,12 @@ class IsometricTileMapExample extends FlameGame
     debugPrint(camera.position.toString());
     overlays.add('PauseMenuBtn');
     overlays.add('ActionMenu');
+    overlays.add('Score');
     orgSizeX;
     orgSizeY;
+
+    HexGrid.setAdjRules(adjRule);
+    HexGrid.setRingRules(ringRule);
 
     add(HexGrid);
   }
@@ -125,11 +133,12 @@ class IsometricTileMapExample extends FlameGame
     var r = (((0 * x) + 2 * (y - centerY)) / (3 * (hexSize + offset))).round() +
         layers -
         1;
-    // parse to grid
-    //debugPrint(q.toString() + " | " + r.toString());
+
     HexGrid.onClick(q, r);
-    //gameGridData.updateColors(mapping, colors, HexGrid);
-    //debugPrint(gameGridData.hexMatrix.toString());
+
+    score = HexGrid.score();
+    overlays.remove("Score");
+    overlays.add("Score");
   }
 
   @override
@@ -228,6 +237,8 @@ class hexGrid extends Component {
   late Color shadowColor;
   late double offsetamt;
   late gridData hexGridData;
+  List<int> adjRules = [];
+  List<int> ringRules = [1, 1];
   hexGrid(List<Polygon> shapes, Color mainColor, Color altColor,
       Color shadowColor, double offsetamt, int layers, Map mapper) {
     shapes = shapes;
@@ -246,6 +257,34 @@ class hexGrid extends Component {
   }
   void onClick(int x, int y) {
     hexGridData.onClick(x, y);
+  }
+
+  void setAdjRules(List<int> adjRule) {
+    adjRules = adjRule;
+  }
+
+  void setRingRules(List<int> ringRule) {
+    ringRules = ringRule;
+  }
+
+  bool validSolution() {
+    //get rule
+    return (hexGridData.adjVals(adjRules) &&
+        hexGridData.sameInRings(ringRules[0], ringRules[1]));
+  }
+
+  int score() {
+    int tilesScore = 0;
+    for (var x = 0; x < hexGridData.hexMatrix.length; x++) {
+      for (var y = 0; y < hexGridData.hexMatrix.length; y++) {
+        if (hexGridData.hexMatrix[x][y] != null) {
+          if (hexGridData.hexMatrix[x][y].val != 0) {
+            tilesScore++;
+          }
+        }
+      }
+    }
+    return tilesScore;
   }
 
   @override
@@ -312,11 +351,32 @@ class gridData {
         hexMatrix[x][y].onClick();
       }
     }
-    debugPrint(this.sameInRings(1, 2).toString());
   }
 
   bool sameInRings(int ring1, int ring2) {
-    return amountInRing(ring1) == amountInRing(ring2);
+    if (amountInRing(ring1) == amountInRing(ring2)) {
+      return true;
+    } else {
+      flashRing(ring1);
+      flashRing(ring2);
+      return false;
+    }
+  }
+
+  bool adjVals(List<int> allowedAdj) {
+    for (var x = 0; x < hexMatrix.length; x++) {
+      for (var y = 0; y < hexMatrix.length; y++) {
+        if (hexMatrix[x][y] != null) {
+          if (hexMatrix[x][y].val > 0) {
+            if (!allowedAdj.contains(amountAdj(x, y))) {
+              flashAdj(x, y);
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
   }
 
   int amountAdj(int x, int y) {
@@ -334,13 +394,44 @@ class gridData {
     for (var i = 0; i < adjVect.length; i++) {
       tx = adjVect[i][0];
       ty = adjVect[i][1];
-      if (hexMatrix[x + tx][ty + y] != null) {
-        if (hexMatrix[x + tx][ty + y].val > 0) {
-          count++;
+      if (x + tx > -1 &&
+          y + ty > -1 &&
+          x + tx < hexMatrix.length &&
+          y + ty < hexMatrix.length) {
+        if (hexMatrix[x + tx][ty + y] != null) {
+          if (hexMatrix[x + tx][ty + y].val > 0) {
+            count++;
+          }
         }
       }
     }
     return count;
+  }
+
+  void flashAdj(int x, int y) {
+    var adjVect = [
+      [0, -1],
+      [1, -1],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [-1, 1]
+    ];
+    int tx;
+    int ty;
+    hexMatrix[x][y].flashHex();
+    for (var i = 0; i < adjVect.length; i++) {
+      tx = adjVect[i][0];
+      ty = adjVect[i][1];
+      if (x + tx > -1 &&
+          y + ty > -1 &&
+          x + tx < hexMatrix.length &&
+          y + ty < hexMatrix.length) {
+        if (hexMatrix[x + tx][ty + y] != null) {
+          hexMatrix[x + tx][ty + y].flashHex();
+        }
+      }
+    }
   }
 
   int amountInRing(int ring) {
@@ -351,9 +442,6 @@ class gridData {
     count = 0;
     X = gridLayers - 1;
     Y = j - 1;
-    if (hexMatrix[X][Y].val != 0) {
-      count++;
-    }
     for (var i = 0; i < gridLayers - j; i++) {
       X++;
       debugPrint(X.toString() + "|" + Y.toString());
@@ -395,6 +483,41 @@ class gridData {
     }
     return count;
   }
+
+  void flashRing(int ring) {
+    int X = gridLayers;
+    int Y = 0;
+    int j = ring;
+    X = gridLayers - 1;
+    Y = j - 1;
+    hexMatrix[X][Y].flashHex();
+    for (var i = 0; i < gridLayers - j; i++) {
+      X++;
+      hexMatrix[X][Y].flashHex();
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y++;
+      hexMatrix[X][Y].flashHex();
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y++;
+      X--;
+      hexMatrix[X][Y].flashHex();
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      X--;
+      hexMatrix[X][Y].flashHex();
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y--;
+      hexMatrix[X][Y].flashHex();
+    }
+    for (var i = 0; i < gridLayers - j; i++) {
+      Y--;
+      X++;
+      hexMatrix[X][Y].flashHex();
+    }
+  }
 }
 
 class HexagonTile extends Component {
@@ -405,6 +528,13 @@ class HexagonTile extends Component {
   late double offsetamt;
   int maxVal = 2;
   int val = 0;
+
+  bool flash = false;
+  static DateTime now = DateTime.now();
+  static DateTime end = DateTime.now().add(Duration(seconds: 2));
+  static int alphaAmt = 0;
+  static int flashDur = 2;
+
   HexagonTile(
       Shape hex, double offamt, Color mColor, Color aColor, Color sColor) {
     hexShape = hex;
@@ -419,6 +549,27 @@ class HexagonTile extends Component {
 
   void onClick() {
     val = (val + 1) % maxVal;
+  }
+
+  void flashHex() {
+    flash = true;
+    now = DateTime.now();
+    end = DateTime.now().add(Duration(seconds: flashDur));
+  }
+
+  void updateFlash() {
+    if (DateTime.now().isAfter(end)) {
+      flash = false;
+    } else {
+      var dif = end.difference(DateTime.now()).inMilliseconds;
+      if (dif < flashDur * 500) {
+        alphaAmt = end.difference(DateTime.now()).inMilliseconds;
+      } else {
+        alphaAmt =
+            (flashDur * 500) - end.difference(DateTime.now()).inMilliseconds;
+      }
+      alphaAmt = ((alphaAmt / (flashDur * 500)) * 255).round();
+    }
   }
 
   @override
@@ -445,7 +596,23 @@ class HexagonTile extends Component {
     p3.style = PaintingStyle.stroke;
     p3.strokeWidth = 2.00;
     p3.color = Color.fromARGB(255, 250, 250, 250);
-
     canvas.drawPath(hexShape.asPath(), p3);
+
+    //flash
+    if (flash) {
+      Paint p4 = Paint();
+      p4.style = PaintingStyle.stroke;
+      p4.strokeWidth = 2.00;
+      p4.color = Color.fromARGB(alphaAmt, 255, 255, 255);
+      Shape tempShapes = hexShape;
+      Transform2D tempTrans = Transform2D();
+      tempTrans.scale = Vector2(1.1, 1.1);
+      tempTrans.x = -hexShape.center.x * 0.1;
+      tempTrans.y = -hexShape.center.y * 0.1;
+      tempShapes = tempShapes.project(tempTrans);
+      canvas.drawPath(tempShapes.asPath(), p4);
+
+      updateFlash();
+    }
   }
 }
