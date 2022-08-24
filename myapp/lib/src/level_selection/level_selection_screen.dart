@@ -24,48 +24,71 @@ class LevelSelectionScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
-        squarishMainArea: Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(
-                child: Text(
-                  'Select level',
-                  style:
-                      TextStyle(fontFamily: 'Permanent Marker', fontSize: 30),
-                ),
+          squarishMainArea: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Row(children: [
+                  TextButton(
+                      onPressed: () => (GoRouter.of(context).pop()),
+                      child: Icon(
+                        Icons.arrow_back, // track changes
+                        size: 30,
+                        color: Colors.green,
+                      )),
+                  Spacer(),
+                  Text(
+                    'Select level',
+                    style:
+                        TextStyle(fontFamily: 'Permanent Marker', fontSize: 30),
+                  ),
+                  Spacer()
+                ]),
               ),
-            ),
-            const SizedBox(height: 50),
-            Expanded(
-              child: ListView(
-                children: [
-                  for (final level in gameLevels)
-                    ListTile(
-                      enabled: playerProgress.highestLevelReached >=
-                          level.number - 1,
-                      onTap: () {
-                        final audioController = context.read<AudioController>();
-                        audioController.playSfx(SfxType.buttonTap);
-
-                        GoRouter.of(context)
-                            .go('/play/session/${level.number}');
-                      },
-                      leading: Text(level.number.toString()),
-                      title: Text('Level #${level.number}'),
-                    )
-                ],
+              const SizedBox(height: 50),
+              Expanded(
+                child: GridView.count(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 16.0,
+                    mainAxisSpacing: 16.0,
+                    shrinkWrap: true,
+                    children: [
+                      for (final level in gameLevels)
+                        OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor:
+                                  (playerProgress.highestLevelReached >=
+                                          level.number - 1)
+                                      ? Color.fromARGB(255, 26, 88, 196)
+                                      : Color.fromARGB(255, 107, 125, 156),
+                              shadowColor: Color.fromARGB(255, 15, 0, 150),
+                            ),
+                            onPressed: (playerProgress.highestLevelReached >=
+                                    level.number - 1)
+                                ? () => {
+                                      GoRouter.of(context)
+                                          .go("/play/session/${level.number}")
+                                    }
+                                : null,
+                            child: Text(
+                                style: TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255)),
+                                "${level.number}")),
+                    ]),
               ),
-            ),
-          ],
-        ),
-        rectangularMenuArea: ElevatedButton(
-          onPressed: () {
-            GoRouter.of(context).pop();
-          },
-          child: const Text('Back'),
-        ),
-      ),
+            ],
+          ),
+          rectangularMenuArea: Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  GoRouter.of(context).go(
+                      '/play/session/${playerProgress.highestLevelReached + 1}');
+                },
+                child: const Text('Next Level'),
+              ),
+            ],
+          )),
     );
   }
 }

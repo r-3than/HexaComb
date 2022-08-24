@@ -1,9 +1,11 @@
-import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:game_template/src/level_selection/levels.dart';
+import '/src/games_services/score.dart';
+import '/src/level_selection/levels.dart';
+import '/src/player_progress/player_progress.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:provider/provider.dart';
 
 import 'newplayscreen.dart';
 
@@ -123,12 +125,12 @@ Widget _actionMenuBuilder(
               size: btnSize,
               color: btnColor,
             ),
-            onPressed: () => pre(game)),
+            onPressed: () => toggleRules(game)),
         Spacer(),
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
             child: Icon(
-              Icons.tips_and_updates_outlined,
+              Icons.alarm_add_outlined, //remove timer!!
               size: btnSize,
               color: btnColor,
             ),
@@ -141,7 +143,7 @@ Widget _actionMenuBuilder(
               size: btnSize,
               color: btnColor,
             ),
-            onPressed: () => checkGame(game))
+            onPressed: () => checkGame(buildContext, game))
       ])),
     ),
   );
@@ -253,7 +255,7 @@ Widget _pauseMenuBuilder(
                         backgroundColor: btnColor,
                         minimumSize: Size(game.orgSizeX * 3 / 5, btnSize)),
                     child: Text(
-                      "Back",
+                      "Shop 🛒",
                       style: TextStyle(fontSize: textFontSize),
                     )),
               ],
@@ -279,9 +281,57 @@ Widget _rulesMenuBuilder(
               ),
             ],
             borderRadius: BorderRadius.all(Radius.circular(20))),
-        child: Padding(padding: EdgeInsets.all(18.0), child: ListView(
-            //cont her TODO
-            children: [Text("test")]))),
+        child: Padding(
+            padding: EdgeInsets.all(18.0),
+            child: Material(
+                type: MaterialType.transparency,
+                child: ListView(
+                    //cont her TODO
+                    children: [
+                      Center(
+                          child: Text(
+                              style: TextStyle(
+                                fontFamily: "Silkscreen",
+                                color: Color.fromARGB(255, 251, 255, 211),
+                                fontSize: 45,
+                              ),
+                              "Rules")),
+                      (game.adjRule != [1, 2, 3, 4, 5, 6])
+                          ? Text(
+                              style: TextStyle(
+                                fontFamily: "Silkscreen",
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 20,
+                              ),
+                              "1) Every hexagon that has been turned on must border " +
+                                  game.getAdjRulesData())
+                          : Text(""),
+                      Text("\n"),
+                      (game.ringRule != [1, 1])
+                          ? Text(
+                              style: TextStyle(
+                                fontFamily: "Silkscreen",
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 20,
+                              ),
+                              "2) There must be the same amount of turned on hexagons in ring " +
+                                  game.ringRule[0].toString() +
+                                  " and ring " +
+                                  game.ringRule[1].toString() +
+                                  ". (Ring 1 is the outermost ring)")
+                          : Text(""),
+                      Text("\n"),
+                      OutlinedButton(
+                          onPressed: () => toggleRules(game),
+                          style: OutlinedButton.styleFrom(
+                              backgroundColor: btnColor,
+                              minimumSize:
+                                  Size(game.orgSizeX * 3 / 5, btnSize)),
+                          child: Text(
+                            "Back",
+                            style: TextStyle(fontSize: textFontSize),
+                          )),
+                    ])))),
   );
 }
 
@@ -304,9 +354,13 @@ void backtwice(BuildContext c) {
   GoRouter.of(c).pop();
 }
 
-void checkGame(IsometricTileMapExample game) {
+void checkGame(BuildContext c, IsometricTileMapExample game) {
   if (game.HexGrid.validSolution()) {
     //go to win screen
-
+    final playerProgress = c.read<PlayerProgress>();
+    playerProgress.setLevelReached(game.level);
+    Score temp = Score(
+        game.level, game.score, DateTime.now().difference(game.levelStart));
+    GoRouter.of(c).go('/play/won', extra: {'score': temp});
   }
 }

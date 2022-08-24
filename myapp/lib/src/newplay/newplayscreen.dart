@@ -42,7 +42,7 @@ class IsometricTileMapExample extends FlameGame
   late double maxSize = (hexSize + offset) * layers;
 
   late var gridInfo = generateGrid(hexSize, offset, centerX, centerY, layers);
-  int? level;
+  late int level;
   //late gridData gameGridData = gridData(layers);
   late List<Polygon> shapes = gridInfo[0];
   late Map mapping = this.generateMapping(gridInfo[1]);
@@ -55,6 +55,8 @@ class IsometricTileMapExample extends FlameGame
       layers,
       mapping);
   late List<Color> colors = generateColors(shapes);
+
+  DateTime levelStart = DateTime.now();
 
   //late ShapesComponent HexGrid = ShapesComponent(shapes, colors);
 
@@ -77,6 +79,21 @@ class IsometricTileMapExample extends FlameGame
     HexGrid.setRingRules(ringRule);
 
     add(HexGrid);
+  }
+
+  String getAdjRulesData() {
+    String baseString = "";
+    if (adjRule.length - 2 >= 0) {
+      for (var i = 0; i < adjRule.length - 2; i++) {
+        baseString = baseString + adjRule[i].toString() + ",";
+      }
+    }
+    baseString = baseString + adjRule[adjRule.length - 2].toString();
+    baseString = baseString +
+        " or " +
+        adjRule[adjRule.length - 1].toString() +
+        " other on hexagon tiles.";
+    return baseString;
   }
 
   @override

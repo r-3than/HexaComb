@@ -46,8 +46,8 @@ class WinGameScreen extends StatelessWidget {
             gap,
             const Center(
               child: Text(
-                'You won!',
-                style: TextStyle(fontFamily: 'Permanent Marker', fontSize: 50),
+                'Level Complete!',
+                style: TextStyle(fontFamily: 'Permanent Marker', fontSize: 35),
               ),
             ),
             gap,

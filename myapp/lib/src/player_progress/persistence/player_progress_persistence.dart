@@ -8,6 +8,8 @@
 /// local preferences to cloud saves.
 abstract class PlayerProgressPersistence {
   Future<int> getHighestLevelReached();
+  Future<int> getCoins();
 
   Future<void> saveHighestLevelReached(int level);
+  Future<void> changeCoins(int deltaCoins);
 }

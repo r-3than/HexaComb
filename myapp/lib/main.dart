@@ -13,7 +13,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:game_template/src/newplay/display.dart';
+import '/src/newplay/display.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -30,7 +30,6 @@ import 'src/in_app_purchase/in_app_purchase.dart';
 import 'src/level_selection/level_selection_screen.dart';
 import 'src/level_selection/levels.dart';
 import 'src/main_menu/main_menu_screen.dart';
-import 'src/play_session/play_session_screen.dart';
 import 'src/player_progress/persistence/local_storage_player_progress_persistence.dart';
 import 'src/player_progress/persistence/player_progress_persistence.dart';
 import 'src/player_progress/player_progress.dart';
@@ -262,6 +261,10 @@ class MyApp extends StatelessWidget {
               textTheme: TextTheme(
                 button: TextStyle(fontFamily: 'Silkscreen'),
                 bodyText2: TextStyle(
+                  color: palette.ink,
+                  fontFamily: 'Silkscreen',
+                ),
+                bodyText1: TextStyle(
                   color: palette.ink,
                   fontFamily: 'Silkscreen',
                 ),

@@ -13,6 +13,19 @@ class LocalStoragePlayerProgressPersistence extends PlayerProgressPersistence {
       SharedPreferences.getInstance();
 
   @override
+  Future<void> changeCoins(int deltaCoins) async {
+    final prefs = await instanceFuture;
+    var tempcoins = prefs.getInt('coinsAmt') ?? 0;
+    await prefs.setInt('coinsAmt', tempcoins + deltaCoins);
+  }
+
+  @override
+  Future<int> getCoins() async {
+    final prefs = await instanceFuture;
+    return prefs.getInt('coinsAmt') ?? 0;
+  }
+
+  @override
   Future<int> getHighestLevelReached() async {
     final prefs = await instanceFuture;
     return prefs.getInt('highestLevelReached') ?? 0;

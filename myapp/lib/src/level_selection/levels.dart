@@ -13,6 +13,76 @@ const gameLevels = [
     // You get this string when you configure an achievement in Play Console.
     achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
   ),
+  GameLevel(
+    number: 2,
+    adjRule: [1, 2, 3],
+    ringRule: [1, 2],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
+  GameLevel(
+    number: 3,
+    adjRule: [4, 2],
+    ringRule: [2, 3],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
+  GameLevel(
+    number: 4,
+    adjRule: [4, 3, 2],
+    ringRule: [2, 3],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
+  GameLevel(
+    number: 5,
+    adjRule: [2],
+    ringRule: [2, 3],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
+  GameLevel(
+    number: 6,
+    adjRule: [4, 2, 5],
+    ringRule: [1, 1],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
+  GameLevel(
+    number: 7,
+    adjRule: [6, 2],
+    ringRule: [1, 3],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
+  GameLevel(
+    number: 8,
+    adjRule: [5, 1],
+    ringRule: [2, 3],
+    // TODO: When ready, change these achievement IDs.
+    // You configure this in App Store Connect.
+    achievementIdIOS: 'first_win',
+    // You get this string when you configure an achievement in Play Console.
+    achievementIdAndroid: 'NhkIwB69ejkMAOOLDb',
+  ),
 ];
 
 class GameLevel {
