@@ -37,7 +37,7 @@ class AdsController {
     // TODO: When ready, change this to the Ad Unit IDs provided by AdMob.
     //       The current values are AdMob's sample IDs.
     final adUnitId = defaultTargetPlatform == TargetPlatform.android
-        ? 'ca-app-pub-3940256099942544/6300978111'
+        ? 'ca-app-pub-2697526402985295/4111806999'
         // iOS
         : 'ca-app-pub-3940256099942544/2934735716';
     _preloadedAd =

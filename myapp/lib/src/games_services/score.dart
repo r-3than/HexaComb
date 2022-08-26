@@ -17,8 +17,19 @@ class Score {
     // The higher the difficulty, the higher the score.
     var score = hexs;
     // The lower the time to beat the level, the higher the score.
-    score *= 500 ~/ (duration.inSeconds.abs() + 1);
+    if (duration.inSeconds.abs() + 1 > 500) {
+      score *= 500 ~/ (duration.inSeconds.abs() + 1);
+    }
+
     return Score._(score, duration, level);
+  }
+
+  int coinsEarned(int highestLevel) {
+    if (level > highestLevel) {
+      return score;
+    } else {
+      return score ~/ 5;
+    }
   }
 
   const Score._(this.score, this.duration, this.level);

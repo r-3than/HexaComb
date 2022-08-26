@@ -12,4 +12,5 @@ abstract class PlayerProgressPersistence {
 
   Future<void> saveHighestLevelReached(int level);
   Future<void> changeCoins(int deltaCoins);
+  Future<void> setCoins(int coins);
 }

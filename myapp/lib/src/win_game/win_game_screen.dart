@@ -15,10 +15,12 @@ import '../style/responsive_screen.dart';
 
 class WinGameScreen extends StatelessWidget {
   final Score score;
+  final int coins;
 
   const WinGameScreen({
     super.key,
     required this.score,
+    required this.coins,
   });
 
   @override
@@ -53,7 +55,7 @@ class WinGameScreen extends StatelessWidget {
             gap,
             Center(
               child: Text(
-                'Score: ${score.score}\n'
+                'Coins Earned: ${coins}\n'
                 'Time: ${score.formattedTime}',
                 style: const TextStyle(
                     fontFamily: 'Permanent Marker', fontSize: 20),

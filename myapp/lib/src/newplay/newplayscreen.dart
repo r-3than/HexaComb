@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flame/components.dart';
+import 'package:flame/components.dart' hide Timer;
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/flame.dart';
@@ -29,6 +30,7 @@ class IsometricTileMapExample extends FlameGame
   late double orgSizeX = size.x;
   late double orgSizeY = size.y;
   int score = 0;
+  int par = 1;
   List<int> adjRule = [1, 2, 3, 4, 5, 6];
   List<int> ringRule = [1, 1];
 
@@ -57,7 +59,9 @@ class IsometricTileMapExample extends FlameGame
   late List<Color> colors = generateColors(shapes);
 
   DateTime levelStart = DateTime.now();
-
+  Duration durationLevel = DateTime.now().difference(DateTime.now());
+  String timerString = "00:00";
+  Timer? timer;
   //late ShapesComponent HexGrid = ShapesComponent(shapes, colors);
 
   IsometricTileMapExample();
@@ -72,13 +76,27 @@ class IsometricTileMapExample extends FlameGame
     overlays.add('PauseMenuBtn');
     overlays.add('ActionMenu');
     overlays.add('Score');
+    overlays.add("Clock");
     orgSizeX;
     orgSizeY;
 
     HexGrid.setAdjRules(adjRule);
     HexGrid.setRingRules(ringRule);
-
+    HexGrid.par = par;
+    timer = Timer.periodic(Duration(seconds: 1), (Timer t) => timerTest());
     add(HexGrid);
+  }
+
+  void timerTest() {
+    durationLevel = DateTime.now().difference(levelStart);
+    int durMin = durationLevel.inSeconds ~/ 60;
+    int durSec = durationLevel.inSeconds % 60;
+    timerString = (durMin < 10) ? "0" + durMin.toString() : durMin.toString();
+    timerString = timerString + ":";
+    timerString = timerString +
+        ((durSec < 10) ? "0" + durSec.toString() : durSec.toString());
+    overlays.remove("Clock");
+    overlays.add("Clock");
   }
 
   String getAdjRulesData() {
@@ -202,6 +220,7 @@ List<dynamic> generateGrid(
     double r, double o, double ox, double oy, int layers) {
   List<Polygon> myHex = [];
   List<double> centers = [];
+
   var x = 0.0;
   var y = 0.0;
   var ty = 0.0;
@@ -256,6 +275,7 @@ class hexGrid extends Component {
   late gridData hexGridData;
   List<int> adjRules = [];
   List<int> ringRules = [1, 1];
+  int par = 1;
   hexGrid(List<Polygon> shapes, Color mainColor, Color altColor,
       Color shadowColor, double offsetamt, int layers, Map mapper) {
     shapes = shapes;
@@ -284,10 +304,37 @@ class hexGrid extends Component {
     ringRules = ringRule;
   }
 
+  void unflash() {
+    for (var x = 0; x < hexGridData.hexMatrix.length; x++) {
+      for (var y = 0; y < hexGridData.hexMatrix.length; y++) {
+        if (hexGridData.hexMatrix[x][y] != null) {
+          hexGridData.hexMatrix[x][y].flash = false;
+        }
+      }
+    }
+  }
+
   bool validSolution() {
     //get rule
+
     return (hexGridData.adjVals(adjRules) &&
-        hexGridData.sameInRings(ringRules[0], ringRules[1]));
+        hexGridData.sameInRings(ringRules[0], ringRules[1]) &&
+        scorepar());
+  }
+
+  bool scorepar() {
+    if (par <= score()) {
+      return true;
+    } else {
+      for (var x = 0; x < hexGridData.hexMatrix.length; x++) {
+        for (var y = 0; y < hexGridData.hexMatrix.length; y++) {
+          if (hexGridData.hexMatrix[x][y] != null) {
+            hexGridData.hexMatrix[x][y].flashHex();
+          }
+        }
+      }
+      return false;
+    }
   }
 
   int score() {
@@ -548,9 +595,10 @@ class HexagonTile extends Component {
 
   bool flash = false;
   static DateTime now = DateTime.now();
-  static DateTime end = DateTime.now().add(Duration(seconds: 2));
+  static int flashDur = 8000;
+  static int aniDur = 500;
+  static DateTime end = DateTime.now().add(Duration(milliseconds: flashDur));
   static int alphaAmt = 0;
-  static int flashDur = 2;
 
   HexagonTile(
       Shape hex, double offamt, Color mColor, Color aColor, Color sColor) {
@@ -571,7 +619,7 @@ class HexagonTile extends Component {
   void flashHex() {
     flash = true;
     now = DateTime.now();
-    end = DateTime.now().add(Duration(seconds: flashDur));
+    end = DateTime.now().add(Duration(milliseconds: flashDur));
   }
 
   void updateFlash() {
@@ -579,13 +627,19 @@ class HexagonTile extends Component {
       flash = false;
     } else {
       var dif = end.difference(DateTime.now()).inMilliseconds;
-      if (dif < flashDur * 500) {
-        alphaAmt = end.difference(DateTime.now()).inMilliseconds;
-      } else {
-        alphaAmt =
-            (flashDur * 500) - end.difference(DateTime.now()).inMilliseconds;
+      double percent = 1;
+      if (dif > flashDur - aniDur) {
+        //charge up
+        percent = (dif - (flashDur - aniDur)) / aniDur;
       }
-      alphaAmt = ((alphaAmt / (flashDur * 500)) * 255).round();
+      if (dif < aniDur) {
+        percent = dif / aniDur;
+      }
+
+      alphaAmt = (percent * 255).round();
+      if (alphaAmt > 255) {
+        alphaAmt = 255;
+      }
     }
   }
 
@@ -619,13 +673,13 @@ class HexagonTile extends Component {
     if (flash) {
       Paint p4 = Paint();
       p4.style = PaintingStyle.stroke;
-      p4.strokeWidth = 2.00;
-      p4.color = Color.fromARGB(alphaAmt, 255, 255, 255);
+      p4.strokeWidth = 4.00;
+      p4.color = Color.fromARGB(alphaAmt, 255, 0, 25);
       Shape tempShapes = hexShape;
       Transform2D tempTrans = Transform2D();
-      tempTrans.scale = Vector2(1.1, 1.1);
-      tempTrans.x = -hexShape.center.x * 0.1;
-      tempTrans.y = -hexShape.center.y * 0.1;
+      tempTrans.scale = Vector2(1.15, 1.15);
+      tempTrans.x = -hexShape.center.x * 0.15;
+      tempTrans.y = -hexShape.center.y * 0.15;
       tempShapes = tempShapes.project(tempTrans);
       canvas.drawPath(tempShapes.asPath(), p4);
 

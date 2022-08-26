@@ -27,6 +27,7 @@ class _GameDisplayScreenState extends State<GameDisplayScreen> {
     iso.level = widget.level.number;
     iso.adjRule = widget.level.adjRule;
     iso.ringRule = widget.level.ringRule;
+    iso.par = widget.level.par;
     myadHelper.loadAd();
     return (Column(
       children: [
@@ -38,7 +39,8 @@ class _GameDisplayScreenState extends State<GameDisplayScreen> {
                   'PauseMenuBtn': _pauseMenuBtnBuilder,
                   'PauseMenu': _pauseMenuBuilder,
                   'RulesMenu': _rulesMenuBuilder,
-                  'Score': _scoreBuilder
+                  'Score': _scoreBuilder,
+                  "Clock": _clockMenu
                 }),
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
@@ -62,22 +64,24 @@ class adHelp {
   bool adLoaded = false;
   adHelp() {}
   void loadAd() {
-    RewardedAd.load(
-        adUnitId: 'ca-app-pub-3940256099942544/5224354917',
-        request: AdRequest(),
-        rewardedAdLoadCallback: RewardedAdLoadCallback(
-          onAdLoaded: (RewardedAd ad) {
-            print('$ad loaded.');
-            // Keep a reference to the ad so you can show it later.
-            rewardedAd = ad;
-            setCallBack();
-            print('RewardedAd LOADED!');
-            adLoaded = true;
-          },
-          onAdFailedToLoad: (LoadAdError error) {
-            print('RewardedAd failed to load: $error');
-          },
-        ));
+    if (!adLoaded) {
+      RewardedAd.load(
+          adUnitId: 'ca-app-pub-2697526402985295/3240969642',
+          request: AdRequest(),
+          rewardedAdLoadCallback: RewardedAdLoadCallback(
+            onAdLoaded: (RewardedAd ad) {
+              print('$ad loaded.');
+              // Keep a reference to the ad so you can show it later.
+              rewardedAd = ad;
+              setCallBack();
+              print('RewardedAd LOADED!');
+              adLoaded = true;
+            },
+            onAdFailedToLoad: (LoadAdError error) {
+              print('RewardedAd failed to load: $error');
+            },
+          ));
+    }
   }
 
   void setCallBack() {
@@ -88,22 +92,25 @@ class adHelp {
         print('$ad onAdDismissedFullScreenContent.');
         adLoaded = false;
         ad.dispose();
+        loadAd();
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
         print('$ad onAdFailedToShowFullScreenContent: $error');
         adLoaded = false;
         ad.dispose();
+        loadAd();
       },
       onAdImpression: (RewardedAd ad) => print('$ad impression occurred.'),
     );
   }
 
-  void showAd() {
+  void showAd(IsometricTileMapExample game) {
     if (adLoaded) {
       rewardedAd?.show(
           onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
         // Reward the user for watching an ad.
         //rewardItem.amount;
+        game.levelStart = DateTime.now();
       });
     }
     loadAd();
@@ -134,14 +141,16 @@ Widget _actionMenuBuilder(
               size: btnSize,
               color: btnColor,
             ),
-            onPressed: () => (myadHelper.showAd())),
+            onPressed: () => (myadHelper.showAd(game))),
         Spacer(),
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
             child: Icon(
               Icons.check,
               size: btnSize,
-              color: btnColor,
+              color: (game.par <= game.score)
+                  ? Color.fromARGB(255, 14, 202, 14)
+                  : btnColor,
             ),
             onPressed: () => checkGame(buildContext, game))
       ])),
@@ -164,20 +173,57 @@ void pauseHandler(IsometricTileMapExample game) {
 }
 
 Widget _scoreBuilder(BuildContext buildContext, IsometricTileMapExample game) {
-  return (Align(
-      alignment: Alignment.topLeft,
+  return (Container(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(10, 15, 0, 0),
-        child: Material(
-            type: MaterialType.transparency,
-            child: Text(
-                style: TextStyle(
-                  fontFamily: "Silkscreen",
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  fontSize: 25,
-                ),
-                "Score: " + game.score.toString())),
-      )));
+          padding: EdgeInsets.fromLTRB(10, 15, 0, 0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Material(
+                type: MaterialType.transparency,
+                child: Text(
+                    style: TextStyle(
+                      fontFamily: "Silkscreen",
+                      color: (game.par <= game.score)
+                          ? Color.fromARGB(255, 14, 202, 14)
+                          : Color.fromARGB(255, 255, 255, 255),
+                      fontSize: 25,
+                    ),
+                    "Score: " + game.score.toString())),
+            Material(
+                type: MaterialType.transparency,
+                child: Text(
+                    style: TextStyle(
+                      fontFamily: "Silkscreen",
+                      color: (game.par <= game.score)
+                          ? Color.fromARGB(255, 14, 202, 14)
+                          : Color.fromARGB(255, 255, 255, 255),
+                      fontSize: 25,
+                    ),
+                    "Par: " + game.par.toString())),
+            Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 0)),
+            Material(
+                type: MaterialType.transparency,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                          style: TextStyle(
+                            fontFamily: "Silkscreen",
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 25,
+                          ),
+                          buildContext.read<PlayerProgress>().Coins.toString()),
+                    ),
+                    Icon(
+                      Icons.hexagon_outlined,
+                      size: 25,
+                      color: Color.fromARGB(255, 255, 255, 255),
+                    ),
+                  ],
+                ))
+          ]))));
 }
 
 Widget _pauseMenuBtnBuilder(
@@ -303,7 +349,7 @@ Widget _rulesMenuBuilder(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 fontSize: 20,
                               ),
-                              "1) Every hexagon that has been turned on must border " +
+                              "- Every hexagon that has been turned on must border " +
                                   game.getAdjRulesData())
                           : Text(""),
                       Text("\n"),
@@ -314,12 +360,20 @@ Widget _rulesMenuBuilder(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 fontSize: 20,
                               ),
-                              "2) There must be the same amount of turned on hexagons in ring " +
+                              "- There must be the same amount of turned on hexagons in ring " +
                                   game.ringRule[0].toString() +
                                   " and ring " +
                                   game.ringRule[1].toString() +
                                   ". (Ring 1 is the outermost ring)")
                           : Text(""),
+                      Text("\n"),
+                      Text(
+                          style: TextStyle(
+                            fontFamily: "Silkscreen",
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 20,
+                          ),
+                          "- Score must reach par to pass the level!"),
                       Text("\n"),
                       OutlinedButton(
                           onPressed: () => toggleRules(game),
@@ -333,6 +387,24 @@ Widget _rulesMenuBuilder(
                           )),
                     ])))),
   );
+}
+
+Widget _clockMenu(BuildContext buildContext, IsometricTileMapExample game) {
+  return Align(
+      alignment: FractionalOffset.bottomLeft,
+      child: Container(
+          height: 225,
+          child: Center(
+              child: Material(
+            type: MaterialType.transparency,
+            child: Text(
+                style: TextStyle(
+                  fontFamily: "Silkscreen",
+                  color: Color.fromARGB(255, 255, 255, 255),
+                  fontSize: 25,
+                ),
+                game.timerString),
+          ))));
 }
 
 void toggleRules(IsometricTileMapExample game) {
@@ -355,12 +427,19 @@ void backtwice(BuildContext c) {
 }
 
 void checkGame(BuildContext c, IsometricTileMapExample game) {
+  game.HexGrid.unflash();
   if (game.HexGrid.validSolution()) {
     //go to win screen
-    final playerProgress = c.read<PlayerProgress>();
-    playerProgress.setLevelReached(game.level);
     Score temp = Score(
         game.level, game.score, DateTime.now().difference(game.levelStart));
-    GoRouter.of(c).go('/play/won', extra: {'score': temp});
+
+    final playerProgress = c.read<PlayerProgress>();
+
+    int dcoins = temp.coinsEarned(playerProgress.highestLevelReached);
+
+    playerProgress.setLevelReached(game.level);
+    playerProgress.changeCoins(dcoins);
+
+    GoRouter.of(c).go('/play/won', extra: {'score': temp, 'coins': dcoins});
   }
 }
