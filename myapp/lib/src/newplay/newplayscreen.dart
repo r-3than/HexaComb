@@ -12,7 +12,7 @@ import 'package:flame/sprite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
-class IsometricTileMapExample extends FlameGame
+class HexGameFlame extends FlameGame
     with
         MouseMovementDetector,
         MultiTouchDragDetector,
@@ -38,8 +38,8 @@ class IsometricTileMapExample extends FlameGame
   double centerX = 0;
   double centerY = 0;
   int layers = 4;
-  late double hexSize = size.x / (2 * (layers + layers - 1));
-  late double offset = 2 * size.x / (3 * hexSize);
+  late double hexSize = max(size.x / (2 * (layers + layers - 1)), 50);
+  late double offset = max(2 * size.x / (3 * hexSize), 10);
 
   late double maxSize = (hexSize + offset) * layers;
 
@@ -64,7 +64,9 @@ class IsometricTileMapExample extends FlameGame
   Timer? timer;
   //late ShapesComponent HexGrid = ShapesComponent(shapes, colors);
 
-  IsometricTileMapExample();
+  HexGameFlame(levelLayers) {
+    layers = levelLayers;
+  }
 
   @override
   Future<void> onLoad() async {
@@ -75,6 +77,7 @@ class IsometricTileMapExample extends FlameGame
     debugPrint(camera.position.toString());
     overlays.add('PauseMenuBtn');
     overlays.add('ActionMenu');
+    overlays.add("RulesMenu");
     overlays.add('Score');
     overlays.add("Clock");
     orgSizeX;
@@ -106,9 +109,11 @@ class IsometricTileMapExample extends FlameGame
         baseString = baseString + adjRule[i].toString() + ",";
       }
     }
-    baseString = baseString + adjRule[adjRule.length - 2].toString();
+    if (adjRule.length != 1) {
+      baseString = baseString + adjRule[adjRule.length - 2].toString() + " or ";
+    }
+
     baseString = baseString +
-        " or " +
         adjRule[adjRule.length - 1].toString() +
         " other on hexagon tiles.";
     return baseString;

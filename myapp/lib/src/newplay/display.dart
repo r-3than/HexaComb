@@ -23,7 +23,7 @@ class GameDisplayScreen extends StatefulWidget {
 class _GameDisplayScreenState extends State<GameDisplayScreen> {
   @override
   Widget build(BuildContext context) {
-    final iso = IsometricTileMapExample();
+    final iso = HexGameFlame(widget.level.layers);
     iso.level = widget.level.number;
     iso.adjRule = widget.level.adjRule;
     iso.ringRule = widget.level.ringRule;
@@ -62,11 +62,12 @@ Color transColor = Color.fromARGB(0, 0, 0, 0);
 class adHelp {
   RewardedAd? rewardedAd;
   bool adLoaded = false;
+  bool CoinsShown = false;
   adHelp() {}
   void loadAd() {
     if (!adLoaded) {
       RewardedAd.load(
-          adUnitId: 'ca-app-pub-2697526402985295/3240969642',
+          adUnitId: 'ca-app-pub-5674541835266474/9058867560',
           request: AdRequest(),
           rewardedAdLoadCallback: RewardedAdLoadCallback(
             onAdLoaded: (RewardedAd ad) {
@@ -104,21 +105,34 @@ class adHelp {
     );
   }
 
-  void showAd(IsometricTileMapExample game) {
+  void showAd(BuildContext c, HexGameFlame game) {
     if (adLoaded) {
       rewardedAd?.show(
           onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
         // Reward the user for watching an ad.
         //rewardItem.amount;
-        game.levelStart = DateTime.now();
+        //game.levelStart = DateTime.now();
+        checkGame(c, game, true);
+      });
+    }
+    loadAd();
+  }
+
+  void showAdCoins(BuildContext c, int coins, Function update) {
+    if (adLoaded) {
+      rewardedAd?.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
+        final playerProgress = c.read<PlayerProgress>();
+        playerProgress.changeCoins(coins);
+        CoinsShown = true;
+        update();
       });
     }
     loadAd();
   }
 }
 
-Widget _actionMenuBuilder(
-    BuildContext buildContext, IsometricTileMapExample game) {
+Widget _actionMenuBuilder(BuildContext buildContext, HexGameFlame game) {
   return Align(
     alignment: FractionalOffset.bottomLeft,
     child: Container(
@@ -137,11 +151,11 @@ Widget _actionMenuBuilder(
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
             child: Icon(
-              Icons.alarm_add_outlined, //remove timer!!
+              Icons.skip_next, //remove timer!!
               size: btnSize,
               color: btnColor,
             ),
-            onPressed: () => (myadHelper.showAd(game))),
+            onPressed: () => (myadHelper.showAd(buildContext, game))),
         Spacer(),
         TextButton(
             style: TextButton.styleFrom(shape: CircleBorder()),
@@ -152,17 +166,17 @@ Widget _actionMenuBuilder(
                   ? Color.fromARGB(255, 14, 202, 14)
                   : btnColor,
             ),
-            onPressed: () => checkGame(buildContext, game))
+            onPressed: () => checkGame(buildContext, game, false))
       ])),
     ),
   );
 }
 
-void pre(IsometricTileMapExample test) {
+void pre(HexGameFlame test) {
   //debugPrint(test.centerX.toString());
 }
 
-void pauseHandler(IsometricTileMapExample game) {
+void pauseHandler(HexGameFlame game) {
   if (game.overlays.isActive('PauseMenu')) {
     game.overlays.remove('PauseMenu');
     game.resumeEngine();
@@ -172,7 +186,7 @@ void pauseHandler(IsometricTileMapExample game) {
   }
 }
 
-Widget _scoreBuilder(BuildContext buildContext, IsometricTileMapExample game) {
+Widget _scoreBuilder(BuildContext buildContext, HexGameFlame game) {
   return (Container(
       child: Padding(
           padding: EdgeInsets.fromLTRB(10, 15, 0, 0),
@@ -214,7 +228,7 @@ Widget _scoreBuilder(BuildContext buildContext, IsometricTileMapExample game) {
                             color: Color.fromARGB(255, 255, 255, 255),
                             fontSize: 25,
                           ),
-                          buildContext.read<PlayerProgress>().Coins.toString()),
+                          buildContext.read<PlayerProgress>().coins.toString()),
                     ),
                     Icon(
                       Icons.hexagon_outlined,
@@ -226,8 +240,7 @@ Widget _scoreBuilder(BuildContext buildContext, IsometricTileMapExample game) {
           ]))));
 }
 
-Widget _pauseMenuBtnBuilder(
-    BuildContext buildContext, IsometricTileMapExample game) {
+Widget _pauseMenuBtnBuilder(BuildContext buildContext, HexGameFlame game) {
   return (Align(
       alignment: FractionalOffset.topRight,
       child: Container(
@@ -242,8 +255,7 @@ Widget _pauseMenuBtnBuilder(
       )));
 }
 
-Widget _pauseMenuBuilder(
-    BuildContext buildContext, IsometricTileMapExample game) {
+Widget _pauseMenuBuilder(BuildContext buildContext, HexGameFlame game) {
   return Center(
     child: Container(
         width: MediaQuery.of(buildContext).size.width * 3 / 4,
@@ -309,8 +321,7 @@ Widget _pauseMenuBuilder(
   );
 }
 
-Widget _rulesMenuBuilder(
-    BuildContext buildContext, IsometricTileMapExample game) {
+Widget _rulesMenuBuilder(BuildContext buildContext, HexGameFlame game) {
   return Center(
     child: Container(
         width: MediaQuery.of(buildContext).size.width * 3 / 4,
@@ -353,7 +364,7 @@ Widget _rulesMenuBuilder(
                                   game.getAdjRulesData())
                           : Text(""),
                       Text("\n"),
-                      (game.ringRule != [1, 1])
+                      (game.ringRule[0] != game.ringRule[1])
                           ? Text(
                               style: TextStyle(
                                 fontFamily: "Silkscreen",
@@ -389,7 +400,7 @@ Widget _rulesMenuBuilder(
   );
 }
 
-Widget _clockMenu(BuildContext buildContext, IsometricTileMapExample game) {
+Widget _clockMenu(BuildContext buildContext, HexGameFlame game) {
   return Align(
       alignment: FractionalOffset.bottomLeft,
       child: Container(
@@ -407,7 +418,7 @@ Widget _clockMenu(BuildContext buildContext, IsometricTileMapExample game) {
           ))));
 }
 
-void toggleRules(IsometricTileMapExample game) {
+void toggleRules(HexGameFlame game) {
   if (game.overlays.isActive('RulesMenu')) {
     game.overlays.remove('RulesMenu');
     game.resumeEngine();
@@ -426,10 +437,11 @@ void backtwice(BuildContext c) {
   GoRouter.of(c).pop();
 }
 
-void checkGame(BuildContext c, IsometricTileMapExample game) {
+void checkGame(BuildContext c, HexGameFlame game, bool forceWin) {
   game.HexGrid.unflash();
-  if (game.HexGrid.validSolution()) {
+  if (game.HexGrid.validSolution() || forceWin) {
     //go to win screen
+    myadHelper.loadAd();
     Score temp = Score(
         game.level, game.score, DateTime.now().difference(game.levelStart));
 
@@ -440,6 +452,7 @@ void checkGame(BuildContext c, IsometricTileMapExample game) {
     playerProgress.setLevelReached(game.level);
     playerProgress.changeCoins(dcoins);
 
-    GoRouter.of(c).go('/play/won', extra: {'score': temp, 'coins': dcoins});
+    GoRouter.of(c).go('/play/won',
+        extra: {'score': temp, 'coins': dcoins, "adHelp": myadHelper});
   }
 }

@@ -164,11 +164,13 @@ class MyApp extends StatelessWidget {
                       final map = state.extra! as Map<String, dynamic>;
                       final score = map['score'] as Score;
                       final coins = map['coins'] as int;
+                      final myAdHelper = map['adHelp'] as adHelp;
 
                       return buildMyTransition(
                         child: WinGameScreen(
                           score: score,
                           coins: coins,
+                          myAdHelper: myAdHelper,
                           key: const Key('win game'),
                         ),
                         color: context.watch<Palette>().backgroundPlaySession,

@@ -23,21 +23,20 @@ class PlayerProgress extends ChangeNotifier {
 
   /// The highest level that the player has reached so far.
   int get highestLevelReached => _highestLevelReached;
-  int get Coins => _coins;
+  int get coins => _coins;
 
   /// Fetches the latest data from the backing persistence store.
   Future<void> getLatestFromStore() async {
     final level = await _store.getHighestLevelReached();
     final coins = await _store.getCoins();
     _coins = coins;
-    notifyListeners();
     await _store.setCoins(_coins);
     if (level > _highestLevelReached) {
       _highestLevelReached = level;
-      notifyListeners();
     } else if (level < _highestLevelReached) {
       await _store.saveHighestLevelReached(_highestLevelReached);
     }
+    notifyListeners();
   }
 
   /// Resets the player's progress so it's like if they just started
@@ -47,12 +46,13 @@ class PlayerProgress extends ChangeNotifier {
     _coins = 0;
     notifyListeners();
     _store.saveHighestLevelReached(_highestLevelReached);
+    _store.setCoins(_coins);
   }
 
   void changeCoins(int deltacoins) {
-    _coins = _coins + deltacoins;
+    _coins = coins + deltacoins;
     notifyListeners();
-    unawaited(_store.changeCoins(_coins + deltacoins));
+    unawaited(_store.changeCoins(deltacoins));
   }
 
   /// Registers [level] as reached.

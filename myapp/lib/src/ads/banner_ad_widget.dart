@@ -145,7 +145,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       // you replace this with your own, production ad unit ID,
       // created in https://apps.admob.com/.
       adUnitId: Theme.of(context).platform == TargetPlatform.android
-          ? 'ca-app-pub-2697526402985295/4111806999'
+          ? 'ca-app-pub-5674541835266474/9014086794'
           : 'ca-app-pub-3940256099942544/2934735716',
       size: size,
       request: const AdRequest(),
