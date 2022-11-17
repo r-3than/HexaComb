@@ -1,3 +1,5 @@
+import 'package:HexaComb/src/ads/banner_ad_widget.dart';
+import 'package:HexaComb/src/shop/shop_items.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '/src/games_services/score.dart';
@@ -10,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'newplayscreen.dart';
 
 adHelp myadHelper = adHelp();
+BannerAdWidget Banner = BannerAdWidget();
 
 class GameDisplayScreen extends StatefulWidget {
   final GameLevel level;
@@ -24,6 +27,12 @@ class _GameDisplayScreenState extends State<GameDisplayScreen> {
   @override
   Widget build(BuildContext context) {
     final iso = HexGameFlame(widget.level.layers);
+    final PlayerProgress playerProgress = context.watch<PlayerProgress>();
+
+    var currentShopItem = shopItems[playerProgress.currentItem];
+    iso.setTheme(currentShopItem.mainColor, currentShopItem.altColor,
+        currentShopItem.shadowColor);
+
     iso.level = widget.level.number;
     iso.adjRule = widget.level.adjRule;
     iso.ringRule = widget.level.ringRule;
@@ -308,7 +317,7 @@ Widget _pauseMenuBuilder(BuildContext buildContext, HexGameFlame game) {
                     )),
                 Padding(padding: const EdgeInsets.all(16.0)),
                 OutlinedButton(
-                    onPressed: () => pauseHandler(game),
+                    onPressed: () => GoRouter.of(buildContext).go("/shop"),
                     style: OutlinedButton.styleFrom(
                         backgroundColor: btnColor,
                         minimumSize: Size(game.orgSizeX * 3 / 5, btnSize)),
@@ -452,7 +461,11 @@ void checkGame(BuildContext c, HexGameFlame game, bool forceWin) {
     playerProgress.setLevelReached(game.level);
     playerProgress.changeCoins(dcoins);
 
-    GoRouter.of(c).go('/play/won',
-        extra: {'score': temp, 'coins': dcoins, "adHelp": myadHelper});
+    GoRouter.of(c).go('/play/won', extra: {
+      'score': temp,
+      'coins': dcoins,
+      "adHelp": myadHelper,
+      "banner": Banner
+    });
   }
 }

@@ -19,12 +19,14 @@ class WinGameScreen extends StatefulWidget {
   final Score score;
   final int coins;
   final adHelp myAdHelper;
+  final BannerAdWidget BannerAD;
 
   const WinGameScreen({
     super.key,
     required this.score,
     required this.coins,
     required this.myAdHelper,
+    required this.BannerAD,
   });
 
   @override
@@ -60,9 +62,9 @@ class _WinGameScreenState extends State<WinGameScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             if (adsControllerAvailable && !adsRemoved) ...[
-              const Expanded(
+              Expanded(
                 child: Center(
-                  child: BannerAdWidget(),
+                  child: widget.BannerAD,
                 ),
               ),
             ],
@@ -99,6 +101,10 @@ class _WinGameScreenState extends State<WinGameScreen> {
                         child: const Text('Double Coins!'),
                       )
                     : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Colors.grey // This is what you need!
+                            ),
                         onPressed: () {
                           //myadHelper.showAdCoins(context, widget.coins);
                         },
@@ -108,6 +114,7 @@ class _WinGameScreenState extends State<WinGameScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
+                  myadHelper.CoinsShown = false;
                   GoRouter.of(context).pop();
                 },
                 child: const Text('Continue'),

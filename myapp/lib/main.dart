@@ -9,6 +9,8 @@
 
 import 'dart:io';
 
+import 'package:HexaComb/src/ads/banner_ad_widget.dart';
+import 'package:HexaComb/src/shop/shop_screen.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -165,12 +167,14 @@ class MyApp extends StatelessWidget {
                       final score = map['score'] as Score;
                       final coins = map['coins'] as int;
                       final myAdHelper = map['adHelp'] as adHelp;
+                      final myBanner = map['banner'] as BannerAdWidget;
 
                       return buildMyTransition(
                         child: WinGameScreen(
                           score: score,
                           coins: coins,
                           myAdHelper: myAdHelper,
+                          BannerAD: myBanner,
                           key: const Key('win game'),
                         ),
                         color: context.watch<Palette>().backgroundPlaySession,
@@ -178,6 +182,11 @@ class MyApp extends StatelessWidget {
                     },
                   )
                 ]),
+            GoRoute(
+              path: 'shop',
+              builder: (context, state) =>
+                  const ShopSelectionScreen(key: Key('shop')),
+            ),
             GoRoute(
               path: 'settings',
               builder: (context, state) =>
@@ -256,7 +265,7 @@ class MyApp extends StatelessWidget {
           final palette = context.watch<Palette>();
 
           return MaterialApp.router(
-            title: 'Flutter Demo',
+            title: 'HexaComb',
             theme: ThemeData.from(
               colorScheme: ColorScheme.fromSeed(
                 seedColor: palette.darkPen,

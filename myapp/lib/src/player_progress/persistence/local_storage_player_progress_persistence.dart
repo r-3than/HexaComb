@@ -20,6 +20,13 @@ class LocalStoragePlayerProgressPersistence extends PlayerProgressPersistence {
   }
 
   @override
+  Future<void> setCurrentItem(int num) async {
+    final prefs = await instanceFuture;
+    //var currentItem = prefs.getInt('currentItem') ?? 0;
+    await prefs.setInt('currentItem', num);
+  }
+
+  @override
   Future<void> setCoins(int Coins) async {
     final prefs = await instanceFuture;
     await prefs.setInt('coinsAmt', Coins);
@@ -29,6 +36,24 @@ class LocalStoragePlayerProgressPersistence extends PlayerProgressPersistence {
   Future<int> getCoins() async {
     final prefs = await instanceFuture;
     return prefs.getInt('coinsAmt') ?? 0;
+  }
+
+  @override
+  Future<void> setShopItems(String items) async {
+    final prefs = await instanceFuture;
+    await prefs.setString('ShopItems', items);
+  }
+
+  @override
+  Future<String> getShopItems() async {
+    final prefs = await instanceFuture;
+    return prefs.getString('ShopItems') ?? "0";
+  }
+
+  @override
+  Future<int> getCurrentItem() async {
+    final prefs = await instanceFuture;
+    return prefs.getInt('currentItem') ?? 0;
   }
 
   @override
