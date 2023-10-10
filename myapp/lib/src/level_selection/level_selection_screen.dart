@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
 import '../player_progress/player_progress.dart';
 import '../style/palette.dart';
@@ -67,7 +66,7 @@ class LevelSelectionScreen extends StatelessWidget {
                                     level.number - 1)
                                 ? () => {
                                       GoRouter.of(context)
-                                          .go("/play/session/${level.number}")
+                                          .push("/play/session/${level.number}")
                                     }
                                 : null,
                             child: Text(
@@ -82,7 +81,7 @@ class LevelSelectionScreen extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  GoRouter.of(context).go(
+                  GoRouter.of(context).push(
                       '/play/session/${playerProgress.highestLevelReached + 1}');
                 },
                 child: const Text('Next Level'),

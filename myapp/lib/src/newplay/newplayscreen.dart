@@ -11,6 +11,7 @@ import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/sprite.dart';
+import 'package:flame/src/effects/provider_interfaces.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
@@ -73,7 +74,7 @@ class HexGameFlame extends FlameGame
     camera.followVector2(cameraCords);
     //HexGrid.setoffset(offset);
     //gameGridData.updateColors(mapping, colors, HexGrid);
-    debugPrint(camera.position.toString());
+    //debugPrint(camera.position.toString());
     overlays.add('PauseMenuBtn');
     overlays.add('ActionMenu');
     overlays.add("RulesMenu");

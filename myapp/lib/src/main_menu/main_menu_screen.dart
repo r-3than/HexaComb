@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../audio/audio_controller.dart';
 import '../audio/sounds.dart';
 import '../games_services/games_services.dart';
 import '../settings/settings.dart';
@@ -21,7 +20,6 @@ class MainMenuScreen extends StatelessWidget {
     final palette = context.watch<Palette>();
     final gamesServicesController = context.watch<GamesServicesController?>();
     final settingsController = context.watch<SettingsController>();
-    final audioController = context.watch<AudioController>();
 
     return Scaffold(
       backgroundColor: palette.backgroundMain,
@@ -61,8 +59,7 @@ class MainMenuScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                audioController.playSfx(SfxType.buttonTap);
-                GoRouter.of(context).go('/play');
+                GoRouter.of(context).push('/play');
               },
               child: const Text('Play'),
             ),
@@ -86,29 +83,14 @@ class MainMenuScreen extends StatelessWidget {
               _gap,
             ],
             ElevatedButton(
-              onPressed: () => GoRouter.of(context).go('/shop'),
+              onPressed: () => GoRouter.of(context).push('/shop'),
               child: const Text('Shop'),
             ),
             _gap,
             ElevatedButton(
-              onPressed: () => GoRouter.of(context).go('/settings'),
+              onPressed: () => GoRouter.of(context).push('/settings'),
               child: const Text('Settings'),
             ),
-            _gap,
-            Padding(
-              padding: const EdgeInsets.only(top: 32),
-              child: ValueListenableBuilder<bool>(
-                valueListenable: settingsController.muted,
-                builder: (context, muted, child) {
-                  return IconButton(
-                    onPressed: () => settingsController.toggleMuted(),
-                    icon: Icon(muted ? Icons.volume_off : Icons.volume_up),
-                  );
-                },
-              ),
-            ),
-            _gap,
-            const Text('Music by Mr Smith'),
             _gap,
           ],
         ),
