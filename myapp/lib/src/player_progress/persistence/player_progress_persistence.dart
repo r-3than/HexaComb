@@ -9,8 +9,12 @@
 abstract class PlayerProgressPersistence {
   Future<int> getHighestLevelReached();
   Future<int> getCoins();
+  Future<int> getCurrentItem();
+  Future<String> getShopItems();
 
   Future<void> saveHighestLevelReached(int level);
   Future<void> changeCoins(int deltaCoins);
   Future<void> setCoins(int coins);
+  Future<void> setShopItems(String items);
+  Future<void> setCurrentItem(int num);
 }

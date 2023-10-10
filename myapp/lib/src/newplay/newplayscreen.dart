@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:HexaComb/src/audio/sounds.dart';
+import 'package:HexaComb/src/player_progress/player_progress.dart';
 import 'package:flame/components.dart' hide Timer;
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
@@ -27,6 +29,10 @@ class HexGameFlame extends FlameGame
   static Vector2 cameraCords = Vector2(0, 0);
   static Vector2 lastdelta = Vector2(0, 0);
 
+  late Color mc;
+  late Color ac;
+  late Color sc;
+
   late double orgSizeX = size.x;
   late double orgSizeY = size.y;
   int score = 0;
@@ -48,14 +54,7 @@ class HexGameFlame extends FlameGame
   //late gridData gameGridData = gridData(layers);
   late List<Polygon> shapes = gridInfo[0];
   late Map mapping = this.generateMapping(gridInfo[1]);
-  late hexGrid HexGrid = hexGrid(
-      shapes,
-      Color.fromARGB(255, 124, 104, 104),
-      Color.fromARGB(255, 229, 172, 63),
-      Color.fromARGB(255, 207, 117, 0),
-      offset,
-      layers,
-      mapping);
+  late hexGrid HexGrid = hexGrid(shapes, mc, ac, sc, offset, layers, mapping);
   late List<Color> colors = generateColors(shapes);
 
   DateTime levelStart = DateTime.now();
@@ -88,6 +87,12 @@ class HexGameFlame extends FlameGame
     HexGrid.par = par;
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) => timerTest());
     add(HexGrid);
+  }
+
+  void setTheme(Color nmc, Color nac, Color nsc) {
+    mc = nmc;
+    ac = nac;
+    sc = nsc;
   }
 
   void timerTest() {
@@ -133,7 +138,7 @@ class HexGameFlame extends FlameGame
   @override
   void onScaleUpdate(ScaleUpdateInfo info) {
     final currentScale = info.scale.global;
-    if (!currentScale.isIdentity()) {
+    if (!currentScale.isIdentity() && currentScale.y != 0) {
       if (startZoom * currentScale.y < 3 && startZoom * currentScale.y > 0.5) {
         camera.zoom = startZoom * currentScale.y;
       }
@@ -183,7 +188,7 @@ class HexGameFlame extends FlameGame
 
   @override
   void onDragStart(int pid, DragStartInfo startPosition) {
-    super.onDragStart(pid, startPosition);
+    //super.onDragStart(pid, startPosition);
     lastCords = startPosition.eventPosition.game;
     debugPrint("START2...");
   }
@@ -619,6 +624,9 @@ class HexagonTile extends Component {
 
   void onClick() {
     val = (val + 1) % maxVal;
+    if (val == 0) {
+      //audioController.playSfx(SfxType.buttonTap);
+    }
   }
 
   void flashHex() {

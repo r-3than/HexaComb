@@ -32,13 +32,16 @@ class MainMenuScreen extends StatelessWidget {
               angle: -0.15,
               child: Column(children: [
                 Spacer(),
-                const Text(
-                  'Hexacomb!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Silkscreen',
-                    fontSize: 55,
-                    height: 1,
+                FittedBox(
+                  fit: BoxFit.cover,
+                  child: Text(
+                    'Hexacomb!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Silkscreen',
+                      fontSize: 55,
+                      height: 1,
+                    ),
                   ),
                 ),
                 const Text(
@@ -82,6 +85,11 @@ class MainMenuScreen extends StatelessWidget {
               ),
               _gap,
             ],
+            ElevatedButton(
+              onPressed: () => GoRouter.of(context).go('/shop'),
+              child: const Text('Shop'),
+            ),
+            _gap,
             ElevatedButton(
               onPressed: () => GoRouter.of(context).go('/settings'),
               child: const Text('Settings'),

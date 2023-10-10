@@ -22,12 +22,9 @@ List<String> soundTypeToFilename(SfxType type) {
         'kss1.mp3',
       ];
     case SfxType.buttonTap:
-      return const [
-        'k1.mp3',
-        'k2.mp3',
-        'p1.mp3',
-        'p2.mp3',
-      ];
+      return const ['click.wav'];
+    case SfxType.buttonUnTap:
+      return const ['unclick.wav'];
     case SfxType.congrats:
       return const [
         'yay1.mp3',
@@ -54,6 +51,7 @@ double soundTypeToVolume(SfxType type) {
     case SfxType.wssh:
       return 0.2;
     case SfxType.buttonTap:
+    case SfxType.buttonUnTap:
     case SfxType.congrats:
     case SfxType.erase:
     case SfxType.swishSwish:
@@ -65,6 +63,7 @@ enum SfxType {
   huhsh,
   wssh,
   buttonTap,
+  buttonUnTap,
   congrats,
   erase,
   swishSwish,
