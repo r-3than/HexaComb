@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:HexaComb/src/audio/sounds.dart';
 import 'package:HexaComb/src/player_progress/player_progress.dart';
 import 'package:flame/components.dart' hide Timer;
+import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/flame.dart';
@@ -27,7 +28,7 @@ class HexGameFlame extends FlameGame
   ''';
 
   static Vector2 lastCords = Vector2(0, 0);
-  static Vector2 cameraCords = Vector2(0, 0);
+  static Vector2 cameraCords = Vector2(1000, 0);
   static Vector2 lastdelta = Vector2(0, 0);
 
   late Color mc;
@@ -71,7 +72,7 @@ class HexGameFlame extends FlameGame
   @override
   Future<void> onLoad() async {
     Flame.device.fullScreen();
-    camera.followVector2(cameraCords);
+    camera.moveTo(cameraCords); //=cameraCords;
     //HexGrid.setoffset(offset);
     //gameGridData.updateColors(mapping, colors, HexGrid);
     //debugPrint(camera.position.toString());
@@ -87,7 +88,7 @@ class HexGameFlame extends FlameGame
     HexGrid.setRingRules(ringRule);
     HexGrid.par = par;
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) => timerTest());
-    add(HexGrid);
+    world.add(HexGrid);
   }
 
   void setTheme(Color nmc, Color nac, Color nsc) {
@@ -132,8 +133,7 @@ class HexGameFlame extends FlameGame
 
   @override
   void onScaleStart(_) {
-    startZoom = camera.zoom;
-    debugPrint("hi");
+    startZoom = camera.viewfinder.zoom;
   }
 
   @override
@@ -141,14 +141,14 @@ class HexGameFlame extends FlameGame
     final currentScale = info.scale.global;
     if (!currentScale.isIdentity() && currentScale.y != 0) {
       if (startZoom * currentScale.y < 3 && startZoom * currentScale.y > 0.5) {
-        camera.zoom = startZoom * currentScale.y;
+        camera.viewfinder.zoom = startZoom * currentScale.y;
       }
     }
   }
 
   @override
   void onDragUpdate(int pid, DragUpdateInfo event) {
-    var delta = -event.delta.global * (1 / camera.zoom);
+    var delta = -event.delta.global * (1 / camera.viewfinder.zoom);
     var newpos = cameraCords + delta;
     if (-maxSize > newpos.x) {
       newpos.x = -maxSize + 1;
@@ -163,14 +163,14 @@ class HexGameFlame extends FlameGame
       newpos.y = maxSize - 1;
     }
     cameraCords = newpos;
-    camera.followVector2(newpos);
+    camera.moveTo(newpos);
   }
 
   @override
   void onTapDown(TapDownInfo e) {
-    debugPrint(e.eventPosition.game.toString());
-    var x = e.eventPosition.game.x;
-    var y = e.eventPosition.game.y;
+    debugPrint(e.eventPosition.global.toString());
+    var x = e.eventPosition.global.x;
+    var y = e.eventPosition.global.y;
     var q =
         ((sqrt(3) * (x - centerX) - (y - centerY)) / (3 * (hexSize + offset)))
                 .round() +
@@ -190,8 +190,9 @@ class HexGameFlame extends FlameGame
   @override
   void onDragStart(int pid, DragStartInfo startPosition) {
     //super.onDragStart(pid, startPosition);
-    lastCords = startPosition.eventPosition.game;
+    lastCords = startPosition.eventPosition.global;
     debugPrint("START2...");
+    //camera.moveBy(Vector2(100, 100));
   }
 
   Map generateMapping(List<double> centers) {

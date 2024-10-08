@@ -29,7 +29,7 @@ dependencies:
   games_services: ^3.0.3  # Achievements and leaderboards
   google_mobile_ads: ^3.0.0  # Ads
   in_app_purchase: ^3.0.1  # In-app purchases
-  flame: 1.4.0
+  flame: ^1.4.0
 
 dev_dependencies:
   flutter_test:

@@ -255,17 +255,7 @@ class MyApp extends StatelessWidget {
                 seedColor: palette.darkPen,
                 background: palette.backgroundMain,
               ),
-              textTheme: TextTheme(
-                button: TextStyle(fontFamily: 'Silkscreen'),
-                bodyText2: TextStyle(
-                  color: palette.ink,
-                  fontFamily: 'Silkscreen',
-                ),
-                bodyText1: TextStyle(
-                  color: palette.ink,
-                  fontFamily: 'Silkscreen',
-                ),
-              ),
+              textTheme: TextTheme(),
             ),
             routeInformationParser: _router.routeInformationParser,
             routerDelegate: _router.routerDelegate,
